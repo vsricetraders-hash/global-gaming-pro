@@ -39,7 +39,7 @@
 </head>
 <body>
 
-    <div id="authScreen" class="fixed inset-0 z-[10000] bg-[#020617] p-10 flex flex-col justify-center">
+    <div id="authScreen" class="fixed inset-0 z-[10000] bg-[#020617] p-10 flex-col justify-center" style="display: none;">
         <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-4 nexus-logo text-center">NexusPro</h1>
         <p class="text-[10px] text-gray-500 font-bold uppercase mb-12 italic tracking-widest text-center">Global Battle Arena</p>
         <div class="space-y-6">
@@ -133,12 +133,11 @@
         </footer>
     </div>
 
-    <div id="gameArena" class="overlay">
+    <div id="gameArena" class="overlay" style="display: none;">
         <div class="flex flex-col min-h-full px-4 pt-10">
             <div class="flex justify-between items-center mb-6 w-full max-w-md mx-auto relative z-[99999]">
                 <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="timer" class="text-xl font-black text-white">01:00</span></div>
                 <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="liveScore" class="text-xl font-black text-blue-500">0</span></div>
-                
                 <button onclick="returnToArena()" ontouchstart="returnToArena(); event.stopPropagation();" class="bg-red-500/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-red-500/30 active:scale-95 cursor-pointer relative z-[99999]">QUIT</button>
             </div>
             
@@ -147,7 +146,7 @@
         </div>
     </div>
 
-    <div id="resultOverlay" class="overlay z-[10000]">
+    <div id="resultOverlay" class="overlay z-[10000]" style="display: none;">
         <div class="flex flex-col items-center justify-center min-h-full p-6">
             <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-t-4 border-blue-500 bg-gradient-to-br from-[#020617] to-blue-900/20 relative z-[99999]">
                 <h2 id="resTitle" class="text-4xl font-black italic text-green-500 mb-2 uppercase">VICTORY</h2>
@@ -170,7 +169,7 @@
         </div>
     </div>
 
-    <div id="depositOverlay" class="overlay">
+    <div id="depositOverlay" class="overlay" style="display: none;">
         <div class="flex flex-col min-h-full p-6 justify-center">
             <div class="flex justify-between items-center mb-10 w-full max-w-sm mx-auto"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Deposit</h2><button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="glass p-8 rounded-[3rem] text-center border-dashed border-blue-500/50 mb-6 w-full max-w-sm mx-auto">
@@ -184,7 +183,7 @@
         </div>
     </div>
 
-    <div id="withdrawOverlay" class="overlay">
+    <div id="withdrawOverlay" class="overlay" style="display: none;">
         <div class="flex flex-col min-h-full p-6 justify-center w-full max-w-sm mx-auto">
             <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Withdraw</h2><button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="space-y-6">
@@ -194,7 +193,7 @@
         </div>
     </div>
 
-    <div id="adminOverlay" class="overlay">
+    <div id="adminOverlay" class="overlay" style="display: none;">
         <div class="flex flex-col min-h-full p-6 justify-center w-full max-w-sm mx-auto">
             <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-red-500 uppercase">Admin Console</h2><button onclick="closeOverlay('adminOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="space-y-6">
@@ -221,7 +220,7 @@
         window.onload = () => {
             const user = localStorage.getItem('nexus_active');
             if(!user) {
-                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('authScreen').style.display = 'flex';
             } else {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
@@ -288,7 +287,6 @@
             initArena(0, 5); 
         }
 
-        // --- THE FIXED ARENA RETURN FUNCTION ---
         function returnToArena() {
             isPlaying = false;
             if(gameTimerInt) clearInterval(gameTimerInt);
@@ -389,10 +387,9 @@
                 }
             }
             
-            // 🚀 FIX 3: TOUCH STRICTLY LIMITED TO CANVAS ONLY
             canvas.ontouchstart = function(e) {
                 e.preventDefault();
-                e.stopPropagation(); // Buttons tak event aane do
+                e.stopPropagation(); 
                 if(p.y >= 350) p.dy = -14;
             };
             canvas.onmousedown = function(e) { 
