@@ -3,144 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO | International Gaming League</title>
+    <title>NEXUS PRO | International Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #030303; color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .game-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .game-card:active { scale: 0.95; }
-        .neon-text { text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; p: 4; }
         #gameArena { display: none; position: fixed; inset: 0; background: #000; z-index: 100; }
-        canvas { background: #050505; display: block; margin: 0 auto; touch-action: none; }
+        canvas { background: #050505; display: block; margin: 0 auto; touch-action: none; border-radius: 20px; }
     </style>
 </head>
 <body class="p-4">
 
     <div id="mainDashboard">
-        <header class="flex justify-between items-center mb-8 pt-4">
+        <header class="flex justify-between items-center mb-10 pt-4">
             <div>
-                <h1 class="text-2xl font-black italic tracking-tighter text-blue-500">NEXUS<span class="text-white">PRO</span></h1>
-                <p class="text-[8px] text-gray-500 tracking-widest font-bold uppercase">Multi-Arena Network</p>
+                <h1 class="text-3xl font-black italic tracking-tighter text-blue-500">NEXUS<span class="text-white">PRO</span></h1>
+                <p class="text-[8px] text-gray-500 tracking-[0.3em] font-bold uppercase">Global Skill Network</p>
             </div>
-            <div class="glass px-4 py-2 rounded-2xl border-blue-500/20">
-                <p class="text-[8px] text-gray-400">WALLET</p>
-                <p class="text-xs font-black text-green-400">₹0.00</p>
+            <div onclick="openWallet()" class="glass px-6 py-2 rounded-2xl border-blue-500/30 active:scale-95 transition cursor-pointer">
+                <p class="text-[8px] text-gray-400 font-bold uppercase">Wallet</p>
+                <p id="walletDisplay" class="text-lg font-black text-green-400">₹0.00</p>
             </div>
         </header>
 
-        <h3 class="text-[10px] font-black uppercase text-blue-400 mb-4 tracking-widest">Select Arena</h3>
+        <h3 class="text-[10px] font-black uppercase text-blue-400 mb-6 tracking-widest border-l-2 border-blue-500 pl-2">Available Arenas</h3>
         
         <div class="space-y-4">
-            <div onclick="initGame('cyberJump')" class="game-card glass p-4 rounded-[2rem] border-l-4 border-blue-500 flex items-center justify-between">
+            <div onclick="initGame('practice')" class="glass p-5 rounded-[2.5rem] border-l-4 border-blue-500 flex items-center justify-between active:scale-95 transition">
                 <div>
-                    <span class="text-[8px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full font-bold uppercase">Speed</span>
+                    <span class="text-[8px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase">Practice</span>
                     <h4 class="text-xl font-black mt-1 uppercase">Cyber Jump</h4>
-                    <p class="text-[10px] text-gray-500 italic">Win up to ₹500</p>
+                    <p class="text-[10px] text-gray-500">Free to Play • No Rewards</p>
                 </div>
-                <div class="h-12 w-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 font-bold">▶</div>
+                <div class="h-12 w-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-500 text-xl">▶</div>
             </div>
 
-            <div onclick="alert('Unlocking soon for VIP Players')" class="game-card glass p-4 rounded-[2rem] border-l-4 border-purple-500 flex items-center justify-between opacity-50">
+            <div onclick="openWallet()" class="glass p-5 rounded-[2.5rem] border-l-4 border-yellow-500 flex items-center justify-between opacity-80 active:scale-95 transition">
                 <div>
-                    <span class="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full font-bold uppercase">Skill</span>
-                    <h4 class="text-xl font-black mt-1 uppercase">Neon Blade</h4>
-                    <p class="text-[10px] text-gray-500 italic">Global Leaderboard Only</p>
+                    <span class="text-[8px] bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full font-black uppercase tracking-tighter">Paid Contest</span>
+                    <h4 class="text-xl font-black mt-1 uppercase">Gold Arena</h4>
+                    <p class="text-[10px] text-gray-500 italic">Entry: ₹10 • Prize: ₹100</p>
                 </div>
-                <div class="h-12 w-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">🔒</div>
-            </div>
-
-            <div onclick="alert('Beta Testing: Starts at ₹100')" class="game-card glass p-4 rounded-[2rem] border-l-4 border-yellow-500 flex items-center justify-between opacity-50">
-                <div>
-                    <span class="text-[8px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full font-bold uppercase">Pro</span>
-                    <h4 class="text-xl font-black mt-1 uppercase">Crypto Dash</h4>
-                    <p class="text-[10px] text-gray-500 italic">High Stakes Arena</p>
-                </div>
-                <div class="h-12 w-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center text-yellow-500">🔒</div>
+                <div class="h-12 w-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center text-yellow-500">🔒</div>
             </div>
         </div>
+    </div>
 
-        <div class="mt-8 glass p-5 rounded-[2rem]">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-[9px] font-black uppercase text-gray-500">Recent Transactions</span>
-                <span class="text-[9px] text-green-500 animate-pulse font-bold">● LIVE FEED</span>
+    <div id="walletModal" class="modal">
+        <div class="glass p-8 rounded-[3rem] w-full max-w-sm text-center border-blue-500/30 border">
+            <h2 class="text-2xl font-black mb-2 uppercase italic">Add Funds</h2>
+            <p class="text-[10px] text-gray-500 mb-6 font-bold tracking-widest uppercase">Verified Secure Node</p>
+            
+            <div class="bg-white/5 p-6 rounded-3xl mb-6 border border-white/10">
+                <p class="text-xs text-gray-400 mb-2">Scan to Pay via UPI</p>
+                <div class="bg-white w-32 h-32 mx-auto rounded-xl flex items-center justify-center text-black font-bold">QR CODE</div>
+                <p class="mt-4 font-black text-blue-400 text-sm italic">ID: your-upi@id</p>
             </div>
-            <div id="liveFeed" class="text-[10px] space-y-3 opacity-60">
-                </div>
+            
+            <button onclick="closeWallet()" class="w-full bg-blue-600 py-4 rounded-2xl font-black uppercase text-xs tracking-widest">Done / Close</button>
         </div>
     </div>
 
     <div id="gameArena">
         <div class="flex justify-between items-center p-6">
-            <h2 id="liveScore" class="text-2xl font-black text-blue-500">SCORE: 0</h2>
-            <button onclick="location.reload()" class="bg-red-500/20 text-red-500 px-4 py-2 rounded-full text-[10px] font-black">QUIT ARENA</button>
+            <h2 id="liveScore" class="text-2xl font-black text-blue-500">0</h2>
+            <button onclick="location.reload()" class="text-red-500 text-[10px] font-black tracking-widest border border-red-500/20 px-4 py-2 rounded-full uppercase">Abort</button>
         </div>
         <canvas id="mainCanvas"></canvas>
     </div>
 
     <script>
-        const feed = document.getElementById('liveFeed');
-        const names = ["Rohan_Mumbai", "S.Sharma", "Gamer_Lucknow", "Amit_Delhi", "Kunal_Pro"];
+        function openWallet() { document.getElementById('walletModal').style.flex = 'flex'; document.getElementById('walletModal').style.display = 'flex'; }
+        function closeWallet() { document.getElementById('walletModal').style.display = 'none'; }
 
-        setInterval(() => {
-            const name = names[Math.floor(Math.random() * names.length)];
-            const entry = document.createElement('div');
-            entry.innerHTML = `<span class="text-blue-500 italic font-bold">SUCCESS:</span> ${name} withdrew ₹120`;
-            feed.prepend(entry);
-            if(feed.childNodes.length > 3) feed.removeChild(feed.lastChild);
-        }, 5000);
-
-        function initGame(gameType) {
+        function initGame(type) {
             document.getElementById('mainDashboard').style.display = 'none';
             document.getElementById('gameArena').style.display = 'block';
-            if(gameType === 'cyberJump') startCyberJump();
+            startJump();
         }
 
-        function startCyberJump() {
+        function startJump() {
             const canvas = document.getElementById('mainCanvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 150;
-
-            let player = { x: 50, y: canvas.height - 100, w: 40, h: 40, dy: 0, gravity: 0.5 };
-            let obstacles = [];
-            let frame = 0;
-            let score = 0;
+            canvas.width = window.innerWidth - 40; canvas.height = 500;
+            let p = {y:400, dy:0}, obs = [], score = 0, frame = 0;
 
             function draw() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Player
-                player.dy += player.gravity;
-                player.y += player.dy;
-                if(player.y > canvas.height - 100) player.y = canvas.height - 100;
-                
-                ctx.fillStyle = '#3b82f6';
-                ctx.shadowBlur = 20; ctx.shadowColor = '#3b82f6';
-                ctx.fillRect(player.x, player.y, player.w, player.h);
-                ctx.shadowBlur = 0;
-
-                // Obstacles
-                if(frame % 100 === 0) obstacles.push({ x: canvas.width, w: 40, h: 40 });
-                obstacles.forEach((ob, i) => {
-                    ob.x -= 6;
-                    ctx.fillStyle = '#ff4444';
-                    ctx.fillRect(ob.x, canvas.height - 100, ob.w, ob.h);
-                    if(player.x < ob.x + ob.w && player.x + player.w > ob.x && player.y + player.h > canvas.height - 100) {
-                        alert("OUT! Final Score: " + score);
-                        location.reload();
-                    }
-                    if(ob.x + ob.w < 0) { obstacles.splice(i, 1); score++; }
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                p.dy += 0.6; p.y += p.dy;
+                if(p.y > 400) p.y = 400;
+                ctx.fillStyle = '#3b82f6'; ctx.fillRect(50, p.y, 30, 30);
+                if(frame % 90 === 0) obs.push({x:canvas.width, w:30});
+                obs.forEach((o, i) => {
+                    o.x -= 5; ctx.fillStyle='#ff4444'; ctx.fillRect(o.x, 400, o.w, 30);
+                    if(50 < o.x + o.w && 80 > o.x && p.y > 370) { alert("Session Over. Score: " + score); location.reload(); }
+                    if(o.x === 0) score++;
                 });
-
-                document.getElementById('liveScore').innerText = "SCORE: " + score;
-                frame++;
-                requestAnimationFrame(draw);
+                document.getElementById('liveScore').innerText = score;
+                frame++; requestAnimationFrame(draw);
             }
-
-            window.addEventListener('touchstart', (e) => {
-                if(player.y >= canvas.height - 110) player.dy = -12;
-            });
+            window.addEventListener('touchstart', () => { if(p.y >= 390) p.dy = -12; });
             draw();
         }
     </script>
