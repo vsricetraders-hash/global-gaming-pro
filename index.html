@@ -249,12 +249,9 @@
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
             const refCode = document.getElementById('refCode').value.trim();
-            
             if(!user) return alert("Enter Gamer ID!");
-            
             const existingBal = localStorage.getItem(user + '_bal');
             localStorage.setItem('nexus_active', user);
-            
             if(!existingBal) {
                 if(refCode) {
                     localStorage.setItem(user + '_bal', '10.00'); 
@@ -394,9 +391,19 @@
             }
         }
 
+        // 🚀 NEW SECURE ADMIN LOCK (Password Protected) 🚀
         function handleAdminClick() {
             adminClicks++; 
-            if(adminClicks >= 5) { openOverlay('adminOverlay'); adminClicks = 0; }
+            if(adminClicks >= 5) { 
+                adminClicks = 0; 
+                // Password check dialog
+                const pwd = prompt("Enter Admin PIN:");
+                if(pwd === "7309") {
+                    openOverlay('adminOverlay'); 
+                } else if(pwd !== null) {
+                    alert("❌ Wrong PIN! Admin access denied.");
+                }
+            }
         }
 
         function setBalance() {
@@ -487,13 +494,13 @@
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
-                // 🚀 NEW FLAWLESS OBSTACLE ENGINE (No Long Gaps)
+                // 🚀 FIX: PROPER GAP FOR JUMPING
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
                 
-                // Minimum gap is 160px.
-                if(lastDist > 160) { 
-                    // Force an obstacle if the gap reaches 280px, OR spawn randomly
-                    if(lastDist > 280 || Math.random() < 0.025) { 
+                // Minimum gap is now 220px (Safe distance to land and jump again)
+                if(lastDist > 220) { 
+                    // Force an obstacle if gap gets too wide (380px) OR randomly spawn
+                    if(lastDist > 380 || Math.random() < 0.02) { 
                         obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
                     }
                 }
