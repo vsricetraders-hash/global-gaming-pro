@@ -84,7 +84,7 @@
                         </div>
                         <div class="flex gap-3">
                             <button onclick="startPractice()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase active:scale-95">Practice</button>
-                            <button onclick="startMatch(50, 5)" class="flex-1 bg-purple-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-purple-500/40 active:scale-95">₹50 Play</button>
+                            <button onclick="startMatch(50, 7)" class="flex-1 bg-purple-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-purple-500/40 active:scale-95">₹50 Play</button>
                         </div>
                     </div>
 
@@ -95,7 +95,7 @@
                         </div>
                         <div class="flex gap-3">
                             <button onclick="startPractice()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase active:scale-95">Practice</button>
-                            <button onclick="startMatch(100, 5)" class="flex-1 bg-yellow-600 py-4 rounded-2xl text-[10px] font-black uppercase text-black shadow-lg shadow-yellow-500/40 active:scale-95">₹100 Play</button>
+                            <button onclick="startMatch(100, 9)" class="flex-1 bg-yellow-600 py-4 rounded-2xl text-[10px] font-black uppercase text-black shadow-lg shadow-yellow-500/40 active:scale-95">₹100 Play</button>
                         </div>
                     </div>
                 </div>
@@ -191,12 +191,9 @@
         <div class="flex flex-col min-h-full p-6 justify-center">
             <div class="flex justify-between items-center mb-10 w-full max-w-sm mx-auto"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Deposit</h2><button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="glass p-8 rounded-[3rem] text-center border-dashed border-blue-500/50 mb-6 w-full max-w-sm mx-auto">
-                
-                <img src="" alt="QR Code" class="w-48 h-48 mx-auto mb-4 rounded-lg shadow-lg hidden" id="qrImg">
-                
                 <p class="text-[10px] text-gray-500 font-black uppercase mb-4">Pay to UPI</p>
-                <p class="text-xl font-black italic text-white mb-6">Nexuspro@ptaxis</p>
-                <button onclick="navigator.clipboard.writeText('Nexuspro@ptaxis'); alert('UPI Copied!')" class="bg-blue-600 px-10 py-4 rounded-full text-[10px] font-black uppercase shadow-lg">Copy UPI ID</button>
+                <p class="text-xl font-black italic text-white mb-6">nexuspro@ptaxis</p>
+                <button onclick="navigator.clipboard.writeText('nexuspro@ptaxis'); alert('UPI Copied!')" class="bg-blue-600 px-10 py-4 rounded-full text-[10px] font-black uppercase shadow-lg">Copy UPI ID</button>
             </div>
             <div class="space-y-4 w-full max-w-sm mx-auto">
                 <button onclick="window.location.href='https://wa.me/917309433678'" class="w-full bg-green-600/20 border border-green-500 p-5 rounded-2xl flex justify-between items-center"><span class="text-xs font-black uppercase italic">WhatsApp Screenshot</span><i class="fa-brands fa-whatsapp text-2xl text-green-500"></i></button>
@@ -439,6 +436,7 @@
             updateUI();
         }
 
+        // 🚀 THE CASINO ENGINE: 40% Win Locked & Smart House Edge 🚀
         function initArena(fee, speedLevel) {
             isPlaying = true;
             document.getElementById('mainApp').style.display = 'none';
@@ -464,13 +462,15 @@
             let isWeakBot = false;
             
             if (fee === 10 && !hasWonFirst10) {
+                // GOLDEN HOOK: Pehla match bot exactly 21 pe rukega.
                 targetBotScore = 21; 
             } else if (fee > 0) {
+                // 🚀 GUARANTEED 40% WIN RATE: 40% chance user jeetega, 60% bot jeetega.
                 isWeakBot = Math.random() < 0.4; 
                 if(isWeakBot) {
-                    targetBotScore = Math.floor(Math.random() * 3) + 27; 
+                    targetBotScore = Math.floor(Math.random() * 3) + 27; // User jeetega (Bot gets 27-29)
                 } else {
-                    targetBotScore = Math.floor(Math.random() * 6) + 34; 
+                    targetBotScore = Math.floor(Math.random() * 6) + 34; // Bot jeetega (Bot gets 34-39)
                 }
             }
 
@@ -482,12 +482,16 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
+                    // 🔥 SMART ADAPTIVE BOT 🔥
+                    // Agar bot ko jeetna tha (isWeakBot = false) aur user pro nikla (e.g. 44 maar diya)
+                    // Toh bot achanak apni speed badhayega aur user se 1-2 point aage nikal jayega!
                     if (!isWeakBot && fee > 0 && !(fee === 10 && !hasWonFirst10)) {
                         if (score >= targetBotScore - 3) {
-                            targetBotScore = score + Math.floor(Math.random() * 2) + 1; 
+                            targetBotScore = score + Math.floor(Math.random() * 2) + 1; // Bot is always ahead
                         }
                     }
 
+                    // Smooth visual scoring for Bot
                     if(timeLeft > 0 && oppScore < targetBotScore) {
                         let chanceToScore = (targetBotScore - oppScore) / timeLeft;
                         if(Math.random() < chanceToScore) {
@@ -498,9 +502,12 @@
                     if(timeLeft <= 0) { 
                         clearInterval(gameTimerInt); 
                         isPlaying = false;
+                        
+                        // Force bot to reach target at the end if RNG missed
                         if (oppScore < targetBotScore) {
                             oppScore = targetBotScore;
                         }
+                        
                         showResult(score, oppScore, fee); 
                     }
                 }, 1000);
@@ -512,10 +519,9 @@
                 if(!isPlaying) return; 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
-                // 🚀 SPEED SAME FOR ALL LEVELS
-                if(score > 10) currentSpeed = speedLevel;
-                if(score > 20) currentSpeed = speedLevel;
-                if(score > 35) currentSpeed = speedLevel; 
+                if(score > 10) currentSpeed = speedLevel + 2;
+                if(score > 20) currentSpeed = speedLevel + 3;
+                if(score > 35) currentSpeed = speedLevel + 4; 
 
                 p.dy += 0.8; 
                 p.y += p.dy; 
@@ -525,8 +531,9 @@
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
-                if(lastDist > 220) { 
-                    if(lastDist > 380 || Math.random() < 0.02) { 
+                
+                if(lastDist > 180) { 
+                    if(lastDist > 320 || Math.random() < 0.02) { 
                         obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
                     }
                 }
