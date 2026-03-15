@@ -459,18 +459,25 @@
 
             const user = localStorage.getItem('nexus_active');
             const hasWonFirst10 = localStorage.getItem(user + '_first_win_10') === 'true';
+            const hasPlayedBig = localStorage.getItem(user + '_played_big') === 'true'; // Maha-Lock track karega
             
             let targetBotScore = 0;
             let isWeakBot = false;
             
             if (fee === 10 && !hasWonFirst10) {
                 targetBotScore = 21; 
+            } else if (fee >= 50 && !hasPlayedBig) {
+                // 🚀 MAHA-LOCK: Pehla 50 ya 100 wala match user 100% HAAREGA
+                isWeakBot = false;
+                targetBotScore = Math.floor(Math.random() * 6) + 42; // Bot banega Terminator (42 se 47 score banayega)
+                localStorage.setItem(user + '_played_big', 'true'); // Lock lag gaya ki bada khel liya
             } else if (fee > 0) {
+                // Normal matches (40% win rule)
                 isWeakBot = Math.random() < 0.4; 
                 if(isWeakBot) {
-                    targetBotScore = Math.floor(Math.random() * 3) + 27; 
+                    targetBotScore = Math.floor(Math.random() * 3) + 27; // Weak Bot
                 } else {
-                    targetBotScore = Math.floor(Math.random() * 6) + 34; 
+                    targetBotScore = Math.floor(Math.random() * 6) + 42; // Strong Bot ab aur bhi high score banayega (42-47)
                 }
             }
 
@@ -482,6 +489,7 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
+                    // Bot cheat protection: Agar player bot ke score ke paas aane lage, toh bot aur aage bhaag jayega
                     if (!isWeakBot && fee > 0 && !(fee === 10 && !hasWonFirst10)) {
                         if (score >= targetBotScore - 3) {
                             targetBotScore = score + Math.floor(Math.random() * 2) + 1; 
@@ -512,7 +520,7 @@
                 if(!isPlaying) return; 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
-                // YAHAN SABKI SPEED SAME KAR DI HAI
+                // Sab matches ke liye speed same rakhi hai
                 if(score > 10) currentSpeed = speedLevel + 2;
                 if(score > 20) currentSpeed = speedLevel + 2;
                 if(score > 35) currentSpeed = speedLevel + 2;
