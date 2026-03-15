@@ -3,165 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO | Admin Empowered</title>
+    <title>NEXUS PRO | The Supreme Esports Empire</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;700;900&display=swap');
         body { background: radial-gradient(circle at 50% -20%, #1e3a8a 0%, #0f172a 40%, #020617 100%); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+        body::before { content: ""; position: fixed; inset: 0; background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; }
         .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .page-content { display: none; height: 85vh; overflow-y: auto; padding-bottom: 180px; scrollbar-width: none; }
-        .page-content.active { display: block; animation: slideUp 0.5s ease-out; }
+        .page-content { display: none; height: 82vh; overflow-y: auto; padding-bottom: 180px; scrollbar-width: none; }
+        .page-content.active { display: block; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        .battle-card { background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .nav-active { color: #3b82f6 !important; filter: drop-shadow(0 0 10px #3b82f6); }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.99); z-index: 2000; padding: 25px; }
-        .battle-card { background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.99); z-index: 2000; padding: 25px; overflow-y: auto; }
+        canvas { background: #020617; display: block; margin: 0 auto; border-radius: 35px; border: 1px solid #1e40af; }
+        .nexus-logo { font-family: 'Syncopate', sans-serif; letter-spacing: -2px; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .animate-marquee { display: inline-block; animation: marquee 20s linear infinite; }
     </style>
 </head>
 <body>
 
-    <div id="authScreen" class="fixed inset-0 z-[3000] bg-[#020617] p-8 flex flex-col justify-center">
-        <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-8 nexus-logo" style="font-family:'Syncopate'">NexusPro</h1>
+    <div id="authScreen" class="fixed inset-0 z-[3000] bg-[#020617] p-10 flex flex-col justify-center">
+        <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-4 nexus-logo">NexusPro</h1>
+        <p class="text-[10px] text-gray-500 font-bold uppercase mb-12 tracking-widest italic">World Class Esports Arena</p>
         <div class="space-y-6">
-            <input id="userName" type="text" placeholder="Enter Username" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500">
-            <input id="userPhone" type="number" placeholder="Mobile Number" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500">
-            <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs">Login to Arena</button>
+            <input id="userName" type="text" placeholder="Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition">
+            <input id="userPhone" type="number" placeholder="Mobile Number" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition">
+            <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-blue-500/30 active:scale-95 transition">Enter Empire</button>
         </div>
     </div>
 
     <div id="mainApp" style="display: none;">
-        <nav class="fixed top-0 inset-x-0 z-[100] glass px-6 py-5 flex justify-between items-center">
+        <nav class="fixed top-0 inset-x-0 z-[100] glass px-6 py-5 flex justify-between items-center border-b border-white/5">
             <h1 class="text-xl font-black italic text-blue-500 uppercase tracking-tighter" style="font-family:'Syncopate'">NexusPro</h1>
             <div onclick="showPage('wallet')" class="bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-2xl flex items-center gap-2">
-                <span id="displayBal" class="text-xs font-black text-blue-400">₹0.00</span>
-                <div class="bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center"><i class="fa-solid fa-plus text-[8px]"></i></div>
+                <span id="topBal" class="text-xs font-black text-blue-400">₹0.00</span>
+                <div class="bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center shadow-lg"><i class="fa-solid fa-plus text-[8px]"></i></div>
             </div>
         </nav>
 
-        <main class="mt-28 px-6">
+        <div class="fixed top-[82px] inset-x-0 bg-blue-600/5 py-1.5 z-[90] border-b border-white/5 overflow-hidden">
+            <div class="animate-marquee whitespace-nowrap text-[8px] font-black uppercase italic tracking-widest text-blue-400">
+                • Sumit won ₹450 in Cyber Jump • Raja won ₹1,200 in Turbo Racer • Instant Withdrawal for ID: NEX-9921 • Join Elite VIP Lounge now •
+            </div>
+        </div>
+
+        <main class="mt-32 px-6">
             <div id="games" class="page-content active">
-                <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-blue-500 mb-6">
-                    <h3 class="text-xl font-black italic uppercase mb-4">Cyber Jump</h3>
-                    <div class="flex gap-3">
-                        <button onclick="initGame()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase">Practice</button>
-                        <button onclick="openOverlay('depositOverlay')" class="flex-1 bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg">₹10 Play</button>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-[9px] font-black text-blue-400 tracking-[0.5em] uppercase italic">Supreme Arena</h2>
+                    <span class="text-[8px] text-green-500 font-bold animate-pulse">● 2,401 ONLINE</span>
+                </div>
+                <div class="space-y-6">
+                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-blue-500">
+                        <div class="flex justify-between items-start mb-6">
+                            <div><h3 class="text-xl font-black italic uppercase">Cyber Jump</h3><p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">₹10 Battle • Win ₹100</p></div>
+                            <i class="fa-solid fa-bolt-lightning text-xl text-blue-500"></i>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="initGame()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase active:scale-95 transition">Practice</button>
+                            <button onclick="openOverlay('depositOverlay')" class="flex-1 bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/30">₹10 Play</button>
+                        </div>
+                    </div>
+                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-purple-500 opacity-80">
+                        <div class="flex justify-between items-start mb-6">
+                            <div><h3 class="text-xl font-black italic uppercase text-purple-400">Reflex Strike</h3><p class="text-[9px] text-gray-500 font-bold uppercase italic tracking-widest leading-none">₹20 Battle • Coming Soon</p></div>
+                            <i class="fa-solid fa-crosshairs text-xl text-purple-500"></i>
+                        </div>
+                        <button onclick="initGame()" class="w-full glass py-4 rounded-2xl text-[10px] font-black uppercase">Practice</button>
+                    </div>
+                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-yellow-500 opacity-60">
+                        <div class="flex justify-between items-start mb-6">
+                            <div><h3 class="text-xl font-black italic uppercase text-yellow-500">Turbo Racer</h3><p class="text-[9px] text-gray-500 font-bold uppercase italic tracking-widest leading-none">₹50 Battle • VIP Only</p></div>
+                            <i class="fa-solid fa-gauge-high text-xl text-yellow-500"></i>
+                        </div>
+                        <button onclick="initGame()" class="w-full glass py-4 rounded-2xl text-[10px] font-black uppercase">Practice</button>
                     </div>
                 </div>
             </div>
 
-            <div id="wallet" class="page-content text-center">
-                <div class="glass p-12 rounded-[3.5rem] mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent">
+            <div id="wallet" class="page-content">
+                <div class="glass p-12 rounded-[3.5rem] text-center mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent">
                     <p class="text-[10px] text-gray-500 font-black uppercase mb-4 tracking-widest italic">Net Balance</p>
                     <h1 id="wallBal" class="text-6xl font-black italic tracking-tighter">₹0.00</h1>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="openOverlay('depositOverlay')" class="bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs">Add Cash</button>
-                    <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs">Withdraw</button>
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <button onclick="openOverlay('depositOverlay')" class="bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs shadow-2xl shadow-blue-500/20 active:scale-95 transition">Add Cash</button>
+                    <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs active:scale-95 transition">Withdraw</button>
+                </div>
+                <div class="glass p-6 rounded-[2.5rem]">
+                    <h4 class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-4 italic">Recent History</h4>
+                    <div class="space-y-4 text-[10px] font-bold italic">
+                        <div class="flex justify-between border-b border-white/5 pb-3"><span>Wallet Init</span><span class="text-blue-500">+ ₹0.00</span></div>
+                        <p class="text-center text-[8px] text-gray-700 py-4 uppercase">No more transactions</p>
+                    </div>
                 </div>
             </div>
 
             <div id="vip" class="page-content">
-                <div class="battle-card p-8 rounded-[3rem] mb-8 border-l-4 border-yellow-500" onclick="checkAdminClick()">
-                    <h2 id="helloUser" class="text-xl font-black italic uppercase mb-2">User</h2>
-                    <p class="text-[10px] text-yellow-500 font-black uppercase">Bronze Tier</p>
+                <div class="battle-card p-8 rounded-[3rem] mb-6 border-l-4 border-yellow-500" onclick="handleAdminClick()">
+                    <div class="flex items-center gap-5 mb-6">
+                        <div class="w-16 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center text-3xl shadow-xl shadow-yellow-500/20"><i class="fa-solid fa-crown text-black"></i></div>
+                        <div><h2 id="userDisplay" class="text-xl font-black italic uppercase">Gamer</h2><p class="text-[10px] text-yellow-500 font-bold uppercase">Bronze Tier Member</p></div>
+                    </div>
+                    <div class="bg-white/5 h-1.5 rounded-full mb-2"><div class="bg-yellow-500 h-full rounded-full w-[12%]"></div></div>
+                    <p class="text-[8px] text-gray-500 font-bold uppercase italic text-right">₹880 to Silver</p>
                 </div>
-                <button onclick="logout()" class="w-full glass py-4 rounded-2xl text-[10px] font-black uppercase text-red-500">Logout</button>
+                <div class="space-y-4">
+                    <div onclick="openOverlay('referOverlay')" class="glass p-6 rounded-2xl flex justify-between items-center active:scale-95 transition">
+                        <div class="flex items-center gap-4"><i class="fa-solid fa-gift text-green-500 text-xl"></i><div><p class="text-[10px] font-black uppercase italic leading-none mb-1">Refer & Earn</p><p class="text-[8px] text-gray-600 font-bold uppercase">Get ₹25 per friend</p></div></div>
+                        <i class="fa-solid fa-chevron-right opacity-20"></i>
+                    </div>
+                    <button onclick="logout()" class="w-full glass py-5 rounded-2xl text-[10px] font-black uppercase text-red-500 active:scale-95 transition">Logout Account</button>
+                </div>
             </div>
         </main>
 
         <footer class="fixed bottom-0 inset-x-0 glass px-12 py-7 flex justify-between items-center z-[150] rounded-t-[3.5rem] border-t border-white/5">
-            <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 nav-active transition"><i class="fa-solid fa-gamepad text-2xl"></i><span class="text-[7px] font-black uppercase">Arena</span></button>
-            <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition"><i class="fa-solid fa-wallet text-2xl"></i><span class="text-[7px] font-black uppercase">Wallet</span></button>
-            <button onclick="showPage('vip')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition"><i class="fa-solid fa-crown text-2xl"></i><span class="text-[7px] font-black uppercase">Account</span></button>
+            <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 nav-active transition"><i class="fa-solid fa-gamepad text-2xl"></i><span class="text-[7px] font-black uppercase tracking-widest">Arena</span></button>
+            <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition"><i class="fa-solid fa-wallet text-2xl"></i><span class="text-[7px] font-black uppercase tracking-widest">Wallet</span></button>
+            <button onclick="showPage('vip')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition"><i class="fa-solid fa-crown text-2xl"></i><span class="text-[7px] font-black uppercase tracking-widest">VIP</span></button>
         </footer>
     </div>
 
-    <div id="adminOverlay" class="overlay">
-        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-red-500 uppercase">Admin Panel</h2><button onclick="closeOverlay('adminOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
-        <div class="space-y-6">
-            <p class="text-[10px] text-gray-500 font-bold uppercase italic tracking-widest">Update User Balance Manually</p>
-            <input id="adminUser" type="text" placeholder="Target Username" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-red-500">
-            <input id="adminAmount" type="number" placeholder="New Balance Amount" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-red-500">
-            <button onclick="updateBalanceByAdmin()" class="w-full bg-red-600 py-6 rounded-3xl font-black uppercase text-xs">Update Now</button>
+    <div id="depositOverlay" class="overlay">
+        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Deposit</h2><button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl opacity-30"></i></button></div>
+        <div class="glass p-8 rounded-[3rem] border-dashed border-blue-500/40 text-center mb-8">
+            <p class="text-[10px] text-gray-400 font-black mb-4 uppercase italic">Pay via UPI</p>
+            <p class="text-xl font-black italic text-white mb-6">9336258808@ptaxis</p>
+            <button onclick="navigator.clipboard.writeText('9336258808@ptaxis'); alert('UPI ID Copied!')" class="bg-blue-600 px-10 py-4 rounded-full text-[10px] font-black uppercase shadow-lg shadow-blue-500/20">Copy UPI ID</button>
+        </div>
+        <div class="space-y-4">
+            <p class="text-[10px] text-gray-500 font-black uppercase text-center mb-4 italic">Bhai, Payment ke baad screenshot bhejo:</p>
+            <a href="https://wa.me/917309433678" target="_blank" class="flex justify-between glass p-5 rounded-2xl"><span class="text-xs font-black uppercase italic">WhatsApp</span><i class="fa-brands fa-whatsapp text-green-500 text-2xl"></i></a>
+            <a href="https://t.me/Iamvaibhav90" target="_blank" class="flex justify-between glass p-5 rounded-2xl"><span class="text-xs font-black uppercase italic">Telegram</span><i class="fa-brands fa-telegram text-blue-400 text-2xl"></i></a>
         </div>
     </div>
 
-    <div id="depositOverlay" class="overlay">
-        <div class="flex justify-between items-center mb-8"><h2 class="text-2xl font-black italic text-blue-500 uppercase italic">Add Money</h2><button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
-        <div class="glass p-8 rounded-[3rem] border-dashed border-blue-500/40 text-center mb-8">
-            <p class="text-[10px] text-gray-400 font-black uppercase mb-4 italic tracking-widest">9336258808@ptaxis</p>
-            <button onclick="alert('UPI Copied!')" class="bg-blue-600 px-10 py-4 rounded-full text-[10px] font-black uppercase">Copy UPI</button>
+    <div id="withdrawOverlay" class="overlay">
+        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Withdraw</h2><button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl opacity-30"></i></button></div>
+        <div class="space-y-8">
+            <div><label class="text-[10px] text-gray-500 font-black uppercase block mb-4 italic tracking-widest">Enter UPI ID</label><input type="text" placeholder="example@upi" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-black italic outline-none focus:border-blue-500"></div>
+            <div><label class="text-[10px] text-gray-500 font-black uppercase block mb-4 italic tracking-widest">Amount (Min ₹100)</label><input type="number" placeholder="₹0.00" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-black italic outline-none focus:border-blue-500"></div>
+            <button onclick="alert('Withdrawal Request Sent! Settle in 2-4 Hours.')" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-2xl shadow-blue-500/40">Request Payout</button>
         </div>
-        <p class="text-center text-[10px] text-gray-500 italic mb-6 uppercase">Send Screenshot to WhatsApp: 7309433678</p>
+    </div>
+
+    <div id="referOverlay" class="overlay">
+        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-green-500 uppercase">Refer Elite</h2><button onclick="closeOverlay('referOverlay')"><i class="fa-solid fa-xmark text-2xl opacity-30"></i></button></div>
+        <div class="text-center mb-10"><div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/10"><i class="fa-solid fa-gift text-3xl text-green-500"></i></div><h3 class="text-xl font-black italic mb-2 uppercase">Earn ₹25 Bonus</h3><p class="text-[10px] text-gray-500 font-bold px-10 mb-10 leading-relaxed uppercase">Invite friends and earn rewards when they play!</p><div class="glass p-8 rounded-[3rem] border-dashed border-white/10"><p class="text-[8px] text-gray-600 font-black uppercase mb-3 italic">Your Invite Code</p><p class="text-3xl font-black italic text-blue-500 tracking-widest mb-6 uppercase">Vaibhav-Pro</p><button onclick="alert('Code Copied!')" class="bg-white text-black px-10 py-4 rounded-full text-[10px] font-black uppercase shadow-xl">Copy Code</button></div></div>
+    </div>
+
+    <div id="adminOverlay" class="overlay">
+        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-red-500 uppercase">Admin Console</h2><button onclick="closeOverlay('adminOverlay')"><i class="fa-solid fa-xmark text-2xl opacity-30"></i></button></div>
+        <div class="space-y-6">
+            <input id="adminUser" type="text" placeholder="Username" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none">
+            <input id="adminAmt" type="number" placeholder="New Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none">
+            <button onclick="setBalance()" class="w-full bg-red-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-red-500/20">Update User Balance</button>
+        </div>
+    </div>
+
+    <div id="gameArena" class="overlay">
+        <div class="p-8 flex justify-between items-center mt-6"><div class="glass px-8 py-3 rounded-2xl border-blue-500/40 shadow-lg"><span id="liveScore" class="text-4xl font-black text-blue-500 italic">0</span></div><button onclick="location.reload()" class="bg-red-500/10 text-red-500 px-8 py-3 rounded-2xl text-[10px] font-black uppercase border border-red-500/20 active:scale-95 transition">Quit Arena</button></div>
+        <canvas id="mainCanvas" class="mt-8"></canvas>
     </div>
 
     <script>
-        // --- CORE LOGIC (NO SUPABASE) ---
         let adminClicks = 0;
-
         function loginUser() {
-            const name = document.getElementById('userName').value;
-            if(!name) return alert("Username dalo bhai!");
-            localStorage.setItem('nexus_user', name);
-            if(!localStorage.getItem(name + '_bal')) localStorage.setItem(name + '_bal', '0.00');
+            const user = document.getElementById('userName').value;
+            if(!user) return alert("Username toh dalo bhai!");
+            localStorage.setItem('active_user', user);
+            if(!localStorage.getItem(user + '_bal')) localStorage.setItem(user + '_bal', '0.00');
             location.reload();
         }
-
         window.onload = () => {
-            const user = localStorage.getItem('nexus_user');
+            const user = localStorage.getItem('active_user');
             if(user) {
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                document.getElementById('helloUser').innerText = user;
-                updateUIBalance();
+                document.getElementById('userDisplay').innerText = user;
+                updateUI();
             }
         }
-
-        function updateUIBalance() {
-            const user = localStorage.getItem('nexus_user');
+        function updateUI() {
+            const user = localStorage.getItem('active_user');
             const bal = localStorage.getItem(user + '_bal') || '0.00';
-            document.getElementById('displayBal').innerText = "₹" + bal;
-            document.getElementById('wallBal').innerText = "₹" + bal;
+            const b = parseFloat(bal).toFixed(2);
+            document.getElementById('topBal').innerText = "₹" + b;
+            document.getElementById('wallBal').innerText = "₹" + b;
         }
-
+        function handleAdminClick() {
+            adminClicks++; if(adminClicks >= 5) { openOverlay('adminOverlay'); adminClicks = 0; }
+        }
+        function setBalance() {
+            const target = document.getElementById('adminUser').value;
+            const amt = document.getElementById('adminAmt').value;
+            if(!target || !amt) return alert("Details bharo!");
+            localStorage.setItem(target + '_bal', amt);
+            alert("Balance Updated for " + target); updateUI(); closeOverlay('adminOverlay');
+        }
         function showPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('nav-active'); b.classList.add('text-gray-500'); });
             document.getElementById(id).classList.add('active');
-            event.currentTarget.classList.add('nav-active');
-            event.currentTarget.classList.remove('text-gray-500');
+            event.currentTarget.classList.add('nav-active'); event.currentTarget.classList.remove('text-gray-500');
         }
-
-        // --- ADMIN POWERS ---
-        function checkAdminClick() {
-            adminClicks++;
-            if(adminClicks >= 5) {
-                openOverlay('adminOverlay');
-                adminClicks = 0;
-            }
-        }
-
-        function updateBalanceByAdmin() {
-            const targetUser = document.getElementById('adminUser').value;
-            const amount = document.getElementById('adminAmount').value;
-            if(!targetUser || !amount) return alert("Details bharo!");
-            
-            // Ye user ke local storage mein save hoga (Lekin real life mein tujhe user ka phone chahiye hoga)
-            // Solution: For testing, ye tumhare phone par tumhara balance update kar dega
-            localStorage.setItem(targetUser + '_bal', amount);
-            alert("Balance Updated for " + targetUser);
-            updateUIBalance();
-            closeOverlay('adminOverlay');
-        }
-
         function openOverlay(id) { document.getElementById(id).style.display = 'block'; }
         function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
-        function logout() { localStorage.removeItem('nexus_user'); location.reload(); }
+        function logout() { localStorage.removeItem('active_user'); location.reload(); }
 
-        // --- GAME ENGINE ---
         function initGame() {
-            alert("Game Started!");
-            // (Same Game Logic as before...)
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('gameArena').style.display = 'block';
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth - 60; canvas.height = 420;
+            let p = {y:350, dy:0}, obs = [], score = 0, frame = 0, speed = 5;
+            function draw() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                if(score > 5) speed = 7.5; if(score > 15) speed = 10;
+                p.dy += 0.75; p.y += p.dy;
+                if(p.y > 350) p.y = 350;
+                ctx.fillStyle = '#3b82f6'; ctx.shadowBlur = 20; ctx.shadowColor = '#3b82f6';
+                ctx.fillRect(60, p.y, 35, 35); ctx.shadowBlur = 0;
+                if(frame % 90 === 0) obs.push({x:canvas.width, w:30, h:45});
+                obs.forEach((o, i) => {
+                    o.x -= speed; ctx.fillStyle = '#ff4444'; ctx.fillRect(o.x, 350, o.w, o.h);
+                    if(60 < o.x + o.w - 5 && 95 > o.x + 5 && p.y > 310) { alert("Session Terminated! Score: " + score); location.reload(); }
+                    if(o.x + o.w < 0) { obs.splice(i, 1); score++; }
+                });
+                document.getElementById('liveScore').innerText = score;
+                frame++; requestAnimationFrame(draw);
+            }
+            window.addEventListener('touchstart', (e) => { e.preventDefault(); if(p.y >= 335) p.dy = -13.5; }, {passive:false});
+            draw();
         }
     </script>
 </body>
