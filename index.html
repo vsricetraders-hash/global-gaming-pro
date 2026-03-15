@@ -135,11 +135,13 @@
 
     <div id="gameArena" class="overlay">
         <div class="flex flex-col min-h-full px-4 pt-10">
-            <div class="flex justify-between items-center mb-6 w-full max-w-md mx-auto">
+            <div class="flex justify-between items-center mb-6 w-full max-w-md mx-auto relative z-[99999]">
                 <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="timer" class="text-xl font-black text-white">01:00</span></div>
                 <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="liveScore" class="text-xl font-black text-blue-500">0</span></div>
-                <button onclick="returnToArena()" class="bg-red-500/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-red-500/30 active:scale-95 z-50 relative">QUIT</button>
+                
+                <button onclick="returnToArena()" ontouchstart="returnToArena(); event.stopPropagation();" class="bg-red-500/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-red-500/30 active:scale-95 cursor-pointer relative z-[99999]">QUIT</button>
             </div>
+            
             <canvas id="mainCanvas"></canvas>
             <p class="text-center mt-8 text-[10px] text-gray-500 uppercase tracking-widest font-black">Tap the Canvas to Jump</p>
         </div>
@@ -147,7 +149,7 @@
 
     <div id="resultOverlay" class="overlay z-[10000]">
         <div class="flex flex-col items-center justify-center min-h-full p-6">
-            <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-t-4 border-blue-500 bg-gradient-to-br from-[#020617] to-blue-900/20">
+            <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-t-4 border-blue-500 bg-gradient-to-br from-[#020617] to-blue-900/20 relative z-[99999]">
                 <h2 id="resTitle" class="text-4xl font-black italic text-green-500 mb-2 uppercase">VICTORY</h2>
                 <p id="resMessage" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-8">You won ₹0.00</p>
                 
@@ -163,7 +165,7 @@
                     </div>
                 </div>
                 
-                <button onclick="returnToArena()" class="w-full bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40 active:scale-95 transition z-50 relative">Back to Arena</button>
+                <button onclick="returnToArena()" ontouchstart="returnToArena(); event.stopPropagation();" class="w-full bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40 active:scale-95 transition cursor-pointer relative z-[99999]">Back to Arena</button>
             </div>
         </div>
     </div>
@@ -286,12 +288,11 @@
             initArena(0, 5); 
         }
 
-        // --- BUTTONS FIX ---
+        // --- THE FIXED ARENA RETURN FUNCTION ---
         function returnToArena() {
-            isPlaying = false; // System stop
+            isPlaying = false;
             if(gameTimerInt) clearInterval(gameTimerInt);
             
-            // Screens off
             document.getElementById('gameArena').style.display = 'none';
             document.getElementById('resultOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
@@ -320,7 +321,7 @@
             if(fee > 0) {
                 document.getElementById('timer').innerText = "01:00";
                 gameTimerInt = setInterval(() => {
-                    if(!isPlaying) return; // Prevent extra ticks if user quit
+                    if(!isPlaying) return; 
                     timeLeft--;
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
@@ -338,7 +339,7 @@
             }
 
             function draw() {
-                if(!isPlaying) return; // MASTER STOP: Animation turant rukegi jab tu button dabayega
+                if(!isPlaying) return; 
                 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
@@ -383,15 +384,18 @@
                 
                 document.getElementById('liveScore').innerText = score;
                 
-                requestAnimationFrame(draw);
+                if(isPlaying || fee === 0) {
+                    requestAnimationFrame(draw);
+                }
             }
             
-            // --- TOUCH FIX: JUMP AB SIRF CANVAS PAR KAAM KAREGA, BUTTONS PAR NAHI ---
+            // 🚀 FIX 3: TOUCH STRICTLY LIMITED TO CANVAS ONLY
             canvas.ontouchstart = function(e) {
                 e.preventDefault();
+                e.stopPropagation(); // Buttons tak event aane do
                 if(p.y >= 350) p.dy = -14;
             };
-            canvas.onmousedown = function(e) { // For PC testing
+            canvas.onmousedown = function(e) { 
                 if(p.y >= 350) p.dy = -14;
             };
             
