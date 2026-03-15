@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO | Anti-Lag Edition</title>
+    <title>NEXUS PRO | Instant Play</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -12,17 +12,16 @@
         .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .page-content { display: none; height: 82vh; overflow-y: auto; padding-bottom: 200px; scrollbar-width: none; }
         .page-content.active { display: block; }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.99); z-index: 5000; padding: 25px; }
-        #gameArena { z-index: 9999 !important; } /* Sabse upar */
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.99); z-index: 5000; padding: 25px; overflow-y: auto; }
+        #gameArena { z-index: 9999 !important; }
         canvas { background: #020617; border-radius: 35px; border: 2px solid #3b82f6; width: 100%; max-width: 400px; display: block; margin: 0 auto; }
-        .loader-ring { width: 70px; height: 70px; border: 5px solid #1e3a8a; border-top: 5px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .nexus-logo { font-family: 'Syncopate', sans-serif; letter-spacing: -2px; }
     </style>
 </head>
 <body>
 
     <div id="authScreen" class="fixed inset-0 z-[10000] bg-[#020617] p-10 flex flex-col justify-center">
-        <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-8" style="font-family:'Syncopate'">NexusPro</h1>
+        <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-8 nexus-logo">NexusPro</h1>
         <div class="space-y-6">
             <input id="userName" type="text" placeholder="Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500">
             <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs">Enter Arena</button>
@@ -31,7 +30,7 @@
 
     <div id="mainApp" style="display: none;">
         <nav class="fixed top-0 inset-x-0 z-[100] glass px-6 py-5 flex justify-between items-center border-b border-white/5">
-            <h1 class="text-xl font-black italic text-blue-500 uppercase" style="font-family:'Syncopate'">NexusPro</h1>
+            <h1 class="text-xl font-black italic text-blue-500 uppercase nexus-logo">NexusPro</h1>
             <div onclick="showPage('wallet')" class="bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-2xl flex items-center gap-2">
                 <span id="topBal" class="text-xs font-black text-blue-400">₹0.00</span>
                 <i class="fa-solid fa-plus-circle text-blue-500 text-[10px]"></i>
@@ -48,7 +47,7 @@
             </div>
 
             <div id="wallet" class="page-content text-center">
-                <div class="glass p-12 rounded-[3.5rem] mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent">
+                <div class="glass p-12 rounded-[3.5rem] mb-8 border-b-4 border-blue-500">
                     <p class="text-[10px] text-gray-500 font-black mb-2 uppercase">Net Wallet</p>
                     <h1 id="wallBal" class="text-6xl font-black italic tracking-tighter">₹0.00</h1>
                 </div>
@@ -66,11 +65,6 @@
             <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 active"><i class="fa-solid fa-gamepad text-2xl"></i><span class="text-[7px] font-black uppercase">Arena</span></button>
             <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500"><i class="fa-solid fa-wallet text-2xl"></i><span class="text-[7px] font-black uppercase">Wallet</span></button>
         </footer>
-    </div>
-
-    <div id="matchOverlay" class="overlay flex flex-col items-center justify-center text-center">
-        <div class="loader-ring mb-8"></div>
-        <h2 class="text-2xl font-black italic uppercase animate-pulse">Finding Real Opponent...</h2>
     </div>
 
     <div id="gameArena" class="overlay">
@@ -130,54 +124,85 @@
             alert("Invalid Code!");
         }
 
-        // --- MATCHMAKING FIX ---
+        // --- DIRECT MATCH START (NO LOADING BAKCHODI) ---
         function startMatch(fee) {
             const user = localStorage.getItem('nexus_active');
             const bal = parseFloat(localStorage.getItem(user + '_bal'));
-            if(bal < fee) return openOverlay('depositOverlay');
             
+            if(bal < fee) {
+                return openOverlay('depositOverlay');
+            }
+            
+            // Deduct Fee instantly
             localStorage.setItem(user + '_bal', (bal - fee).toFixed(2));
             updateUI();
             
-            // Show Loading
-            document.getElementById('matchOverlay').style.display = 'flex';
-            
-            // Hard timeout to FORCE start game
-            setTimeout(() => {
-                document.getElementById('matchOverlay').style.display = 'none';
-                initArena(fee);
-            }, 2500);
+            // DIRECT START GAME. NO DELAY.
+            initArena(fee);
         }
 
         function initArena(fee) {
+            document.getElementById('mainApp').style.display = 'none';
             document.getElementById('gameArena').style.display = 'block';
+            
             const canvas = document.getElementById('mainCanvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth - 60; canvas.height = 420;
+            canvas.width = window.innerWidth - 60; 
+            canvas.height = 420;
             
             let p = {y:350, dy:0}, obs = [], score = 0, botScore = 0, timeLeft = 60;
+            
             const tInt = setInterval(() => {
                 timeLeft--;
                 document.getElementById('timer').innerText = `00:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`;
                 if(Math.random() > 0.7) botScore++;
-                if(timeLeft <= 0) { clearInterval(tInt); finish(score, botScore, fee); }
+                if(timeLeft <= 0) { 
+                    clearInterval(tInt); 
+                    finish(score, botScore, fee); 
+                }
             }, 1000);
 
             function draw() {
                 if(timeLeft <= 0) return;
                 ctx.clearRect(0,0,canvas.width,canvas.height);
-                p.dy += 0.8; p.y += p.dy; if(p.y > 350) p.y = 350;
-                ctx.fillStyle = '#3b82f6'; ctx.fillRect(60, p.y, 35, 35);
+                
+                // Player Gravity
+                p.dy += 0.8; 
+                p.y += p.dy; 
+                if(p.y > 350) p.y = 350;
+                
+                // Draw Player
+                ctx.fillStyle = '#3b82f6'; 
+                ctx.fillRect(60, p.y, 35, 35);
+                
+                // Obstacles
                 if(Math.random() < 0.02) obs.push({x:canvas.width, w:30, h:45});
+                
                 obs.forEach((o, i) => {
-                    o.x -= 7; ctx.fillStyle = '#ff4444'; ctx.fillRect(o.x, 350, o.w, o.h);
-                    if(60 < o.x + o.w - 5 && 95 > o.x + 5 && p.y > 310) { score = Math.max(0, score - 2); }
-                    if(o.x + o.w < 0) { obs.splice(i, 1); score++; }
+                    o.x -= 7; 
+                    ctx.fillStyle = '#ff4444'; 
+                    ctx.fillRect(o.x, 350, o.w, o.h);
+                    
+                    // Collision
+                    if(60 < o.x + o.w - 5 && 95 > o.x + 5 && p.y > 310) { 
+                        score = Math.max(0, score - 2); 
+                    }
+                    if(o.x + o.w < 0) { 
+                        obs.splice(i, 1); 
+                        score++; 
+                    }
                 });
+                
                 document.getElementById('liveScore').innerText = score;
                 requestAnimationFrame(draw);
             }
-            window.addEventListener('touchstart', (e) => { e.preventDefault(); if(p.y >= 335) p.dy = -13.5; }, {passive:false});
+            
+            // Controls
+            window.addEventListener('touchstart', (e) => { 
+                e.preventDefault(); 
+                if(p.y >= 335) p.dy = -13.5; 
+            }, {passive:false});
+            
             draw();
         }
 
@@ -188,7 +213,9 @@
                 const win = f * 1.8;
                 alert(`WINNER! Won ₹${win}`);
                 localStorage.setItem(user + '_bal', (bal + win).toFixed(2));
-            } else { alert("DEFEAT! Try again."); }
+            } else { 
+                alert("DEFEAT! Try again."); 
+            }
             location.reload();
         }
 
