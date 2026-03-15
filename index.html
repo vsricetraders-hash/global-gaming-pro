@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO | Perfect Engine</title>
+    <title>NEXUS PRO | Ultimate Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -141,6 +141,27 @@
         <canvas id="mainCanvas"></canvas>
     </div>
 
+    <div id="resultOverlay" class="overlay flex flex-col items-center justify-center z-[10000]">
+        <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-t-4 border-blue-500 bg-gradient-to-br from-[#020617] to-blue-900/20">
+            <h2 id="resTitle" class="text-4xl font-black italic text-green-500 mb-2 uppercase">VICTORY</h2>
+            <p id="resMessage" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-8">You won ₹18.00</p>
+            
+            <div class="flex justify-between items-center bg-white/5 rounded-2xl p-6 mb-8 border border-white/10">
+                <div class="text-center">
+                    <p class="text-[8px] text-gray-500 font-black uppercase mb-1">Your Score</p>
+                    <h3 id="resYourScore" class="text-3xl font-black text-white italic">0</h3>
+                </div>
+                <div class="w-px h-12 bg-white/10"></div>
+                <div class="text-center">
+                    <p class="text-[8px] text-gray-500 font-black uppercase mb-1">Opponent</p>
+                    <h3 id="resOppScore" class="text-3xl font-black text-gray-400 italic">0</h3>
+                </div>
+            </div>
+            
+            <button onclick="location.reload()" class="w-full bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40 active:scale-95 transition">Back to Arena</button>
+        </div>
+    </div>
+
     <div id="depositOverlay" class="overlay">
         <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Deposit</h2><button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
         <div class="glass p-8 rounded-[3rem] text-center border-dashed border-blue-500/50 mb-6">
@@ -150,7 +171,6 @@
         </div>
         <div class="space-y-4">
             <button onclick="window.location.href='https://wa.me/917309433678'" class="w-full bg-green-600/20 border border-green-500 p-5 rounded-2xl flex justify-between items-center"><span class="text-xs font-black uppercase italic">WhatsApp Screenshot</span><i class="fa-brands fa-whatsapp text-2xl text-green-500"></i></button>
-            <button onclick="window.location.href='https://t.me/Iamvaibhav90'" class="w-full bg-blue-600/20 border border-blue-500 p-5 rounded-2xl flex justify-between items-center"><span class="text-xs font-black uppercase italic">Telegram Support</span><i class="fa-brands fa-telegram text-2xl text-blue-400"></i></button>
         </div>
     </div>
 
@@ -237,23 +257,16 @@
             const user = localStorage.getItem('nexus_active');
             const bal = parseFloat(localStorage.getItem(user + '_bal'));
             
-            if(bal < fee) {
-                return openOverlay('depositOverlay');
-            }
+            if(bal < fee) return openOverlay('depositOverlay');
             
-            // Deduct Fee
             localStorage.setItem(user + '_bal', (bal - fee).toFixed(2));
             updateUI();
             
-            // No loading, direct enter
             initArena(fee, speedLevel);
         }
 
-        function startPractice() {
-            initArena(0, 5);
-        }
+        function startPractice() { initArena(0, 5); }
 
-        // --- PERFECTED GAME ENGINE ---
         function initArena(fee, speedLevel) {
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('gameArena').style.display = 'block';
@@ -265,18 +278,18 @@
             
             let p = { y: 350, dy: 0, w: 35, h: 35 };
             let obs = [];
-            let score = 0, botScore = 0, timeLeft = 60;
+            let score = 0, oppScore = 0, timeLeft = 60;
             let currentSpeed = speedLevel;
 
-            // Timer & Bot Score
             const tInt = setInterval(() => {
                 if(fee > 0) {
                     timeLeft--;
                     document.getElementById('timer').innerText = `00:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`;
-                    if(Math.random() > 0.6) botScore++;
+                    // Smarter Opponent Simulation
+                    if(Math.random() > 0.6) oppScore++;
                     if(timeLeft <= 0) { 
                         clearInterval(tInt); 
-                        finish(score, botScore, fee); 
+                        showResult(score, oppScore, fee); 
                     }
                 } else {
                     document.getElementById('timer').innerText = "PRACTICE";
@@ -287,20 +300,16 @@
                 if(timeLeft <= 0 && fee > 0) return;
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
-                // Speed progression based on score
                 if(score > 10) currentSpeed = speedLevel + 2;
                 if(score > 25) currentSpeed = speedLevel + 3;
 
-                // Player Gravity Physics
                 p.dy += 0.8; 
                 p.y += p.dy; 
-                if(p.y > 350) p.y = 350; // Floor limit
+                if(p.y > 350) p.y = 350; 
                 
-                // Draw Player (Blue)
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
-                // Spawn Obstacles (prevent overlap by checking distance)
                 if(Math.random() < 0.015 && (obs.length === 0 || canvas.width - obs[obs.length-1].x > 150)) {
                     obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
                 }
@@ -309,42 +318,31 @@
                     let o = obs[i];
                     o.x -= currentSpeed; 
                     
-                    // Draw Obstacle (Red)
                     ctx.fillStyle = '#ff4444'; 
                     ctx.fillRect(o.x, 350, o.w, o.h);
                     
-                    // --- ACCURATE COLLISION DETECTION ---
                     let hitX = (60 < o.x + o.w) && (60 + p.w > o.x);
                     let hitY = (p.y + p.h > 350); 
                     
                     if (hitX && hitY) {
-                        // HIT! Penalty applied.
                         if(fee > 0) score = Math.max(0, score - 2); 
-                        obs.splice(i, 1); // Break the obstacle immediately
-                        
-                        // Red Flash effect for visual feedback
+                        obs.splice(i, 1); 
                         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
                         continue; 
                     }
                     
-                    // --- SUCCESSFUL JUMP (Scoring) ---
                     if (o.x + o.w < 60 && !o.passed) {
                         o.passed = true;
                         score++;
                     }
-                    
-                    // Remove off-screen obstacles
-                    if (o.x + o.w < 0) {
-                        obs.splice(i, 1);
-                    }
+                    if (o.x + o.w < 0) { obs.splice(i, 1); }
                 }
                 
                 document.getElementById('liveScore').innerText = score;
                 requestAnimationFrame(draw);
             }
             
-            // Clean Jump Event (Prevents double jumps if tapped quickly)
             function doJump(e) {
                 e.preventDefault(); 
                 if(p.y >= 350) p.dy = -14; 
@@ -355,17 +353,37 @@
             draw();
         }
 
-        function finish(s, bs, fee) {
+        // --- PROFESSIONAL RESULT POPUP LOGIC ---
+        function showResult(myScore, oppScore, fee) {
             const user = localStorage.getItem('nexus_active');
             const bal = parseFloat(localStorage.getItem(user + '_bal'));
-            if(s > bs) {
-                const win = fee * 1.8;
-                alert(`VICTORY! You scored ${s}. Won ₹${win}`);
-                localStorage.setItem(user + '_bal', (bal + win).toFixed(2));
-            } else { 
-                alert(`DEFEAT! Bot scored ${bs}, You scored ${s}.`); 
+            
+            document.getElementById('gameArena').style.display = 'none';
+            document.getElementById('resYourScore').innerText = myScore;
+            document.getElementById('resOppScore').innerText = oppScore;
+            
+            const resTitle = document.getElementById('resTitle');
+            const resMessage = document.getElementById('resMessage');
+            
+            if(myScore > oppScore) {
+                const winAmt = fee * 1.8;
+                resTitle.innerText = "VICTORY";
+                resTitle.className = "text-4xl font-black italic text-green-500 mb-2 uppercase";
+                resMessage.innerText = `You won ₹${winAmt.toFixed(2)}`;
+                localStorage.setItem(user + '_bal', (bal + winAmt).toFixed(2));
+            } else if (myScore === oppScore) {
+                resTitle.innerText = "DRAW";
+                resTitle.className = "text-4xl font-black italic text-yellow-500 mb-2 uppercase";
+                resMessage.innerText = "Entry fee refunded";
+                localStorage.setItem(user + '_bal', (bal + fee).toFixed(2));
+            } else {
+                resTitle.innerText = "DEFEAT";
+                resTitle.className = "text-4xl font-black italic text-red-500 mb-2 uppercase";
+                resMessage.innerText = "Better luck next time";
             }
-            location.reload();
+            
+            updateUI();
+            openOverlay('resultOverlay');
         }
 
         function showPage(id) {
