@@ -392,9 +392,6 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
-                    // 🚀 TERA PROFIT LOGIC (HOUSE ALWAYS WINS)
-                    // Ab bot laghbhag 65% times score badhayega. 1 min mein 38-42 score fix hai.
-                    // Is score ko cross karna normal user ke bas mein nahi hoga.
                     if(Math.random() > 0.35) oppScore++;
                     
                     if(timeLeft <= 0) { 
@@ -435,7 +432,8 @@
                     let hitY = (p.y + p.h > 350); 
                     
                     if (hitX && hitY) {
-                        if(fee > 0) score = Math.max(0, score - 2); 
+                        // 🚀 TERA IDEA: -1 Penalty kar di gayi hai
+                        if(fee > 0) score = Math.max(0, score - 1); 
                         obs.splice(i, 1); 
                         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
