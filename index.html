@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS | International Gaming League</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .neon-glow { box-shadow: 0 0 20px rgba(0, 150, 255, 0.3); }
+    </script>
+</head>
+<body class="p-4 md:p-10">
+    <header class="flex justify-between items-center mb-10">
+        <h1 class="text-3xl font-bold tracking-tighter text-blue-500">NEXUS<span class="text-white">ARCADE</span></h1>
+        <div class="glass px-4 py-2 rounded-full text-sm font-medium border-blue-500/30">
+            SYSTEM STATUS: <span class="text-green-400">ACTIVE</span>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass p-6 rounded-3xl neon-glow">
+            <p class="text-gray-400 text-sm uppercase tracking-widest mb-2">Global Wallet</p>
+            <h2 class="text-4xl font-bold mb-4">$0.00</h2>
+            <button class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-bold transition">DEPOSIT FUNDS</button>
+        </div>
+
+        <div class="glass p-6 rounded-3xl md:col-span-2">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-xl">Active Tournaments</h3>
+                <span class="flex items-center text-xs text-red-400"><span class="w-2 h-2 bg-red-500 rounded-full animate-ping mr-2"></span> 1,248 PLAYERS ONLINE</span>
+            </div>
+            <div id="tournament-list" class="space-y-3">
+                </div>
+        </div>
+    </div>
+
+    <div class="mt-10 glass p-10 rounded-3xl text-center border-dashed border-2 border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">Ready for the Next Match?</h2>
+        <p class="text-gray-500 mb-6">Skill-based match-making starting in 0.02s</p>
+        <button onclick="startGame()" class="bg-white text-black px-10 py-4 rounded-full font-black hover:scale-105 transition">ENTER ARENA</button>
+    </div>
+
+    <script>
+        // Bot Match-making Logic for "Empire" feel
+        const bots = ["Alex_UK", "Shadow99", "Pro_Gamer_US", "Elite_Sniper", "CyberKing"];
+        const list = document.getElementById('tournament-list');
+
+        function updateLiveStatus() {
+            const bot = bots[Math.floor(Math.random() * bots.length)];
+            const entry = document.createElement('div');
+            entry.className = "flex justify-between p-3 bg-white/5 rounded-xl border border-white/5";
+            entry.innerHTML = `<span>Match Found: <b>${bot}</b> vs Anonymous</span> <span class="text-blue-400 font-mono">+$45.00 Potential</span>`;
+            list.prepend(entry);
+            if (list.childNodes.length > 5) list.removeChild(list.lastChild);
+        }
+        setInterval(updateLiveStatus, 3000);
+
+        function startGame() { alert("Match-making in progress... Connecting to Global Servers"); }
+    </script>
+</body>
+</html>
