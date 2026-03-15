@@ -224,14 +224,16 @@
             </div>
 
             <div class="glass p-6 rounded-3xl border border-red-500/30 mb-6">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Generate Deposit Promo</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Generate Secure Promo Code</p>
                 <input id="genAmt" type="number" placeholder="Amount (e.g. 50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
                 <button onclick="generatePromo()" class="w-full bg-red-600 py-4 rounded-xl font-black uppercase text-[10px]">Create Code</button>
-                <div class="mt-4 text-center"><p id="generatedCode" class="text-xl font-black text-green-400 tracking-widest uppercase"></p></div>
+                <div class="mt-4 text-center">
+                    <p id="generatedCode" class="text-xl font-black text-green-400 tracking-widest uppercase"></p>
+                </div>
             </div>
 
             <div class="glass p-6 rounded-3xl">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Local Balance Update</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Direct Balance Update (Local)</p>
                 <input id="adminUser" type="text" placeholder="Target Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
                 <input id="adminAmt" type="number" placeholder="New Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
                 <button onclick="setBalance()" class="w-full bg-yellow-600 text-black py-4 rounded-xl font-black uppercase text-[10px]">Update Local Balance</button>
@@ -247,9 +249,12 @@
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
             const refCode = document.getElementById('refCode').value.trim();
+            
             if(!user) return alert("Enter Gamer ID!");
+            
             const existingBal = localStorage.getItem(user + '_bal');
             localStorage.setItem('nexus_active', user);
+            
             if(!existingBal) {
                 if(refCode) {
                     localStorage.setItem(user + '_bal', '10.00'); 
@@ -287,7 +292,6 @@
             document.getElementById('wallBal').innerText = "₹" + bal;
         }
 
-        // 🚀 SMART & SECURE WITHDRAW SYSTEM
         function processWithdraw() {
             const upi = document.getElementById('withUpi').value.trim();
             const amtStr = document.getElementById('withAmt').value.trim();
@@ -299,12 +303,10 @@
             if (isNaN(amt) || amt < 50) return alert("Minimum withdrawal ₹50 hai mere bhai!");
             if (amt > currentBal) return alert("Tere wallet mein itne paise nahi hain!");
 
-            // Paisa deduct
             currentBal -= amt;
             localStorage.setItem(user + '_bal', currentBal.toFixed(2));
             updateUI();
 
-            // Withdraw Hash Logic (Different from deposit logic)
             const rand = Math.floor(1000 + Math.random() * 9000);
             const secretHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
             const wdCode = `WD-${amt}-${rand}-${secretHash}`;
@@ -319,12 +321,10 @@
             window.location.href = `https://wa.me/${adminPhone}?text=${msg}`;
         }
 
-        // 🚀 ADMIN VERIFIER FOR PAYOUTS
         function verifyWithdrawal() {
             const code = document.getElementById('verifyWdCode').value.toUpperCase().trim();
             if(!code) return alert("Code daalo bhai!");
 
-            // Check against admin's local paid list
             let paidCodes = JSON.parse(localStorage.getItem('admin_paid_codes') || '[]');
             if(paidCodes.includes(code)) {
                 return alert("🚨 SCAM ALERT! Ye code pehle hi pay ho chuka hai. User dobara payment maang raha hai!");
@@ -341,13 +341,10 @@
 
             if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return alert("❌ Invalid Code!");
 
-            // Re-calculate hash
             const expectedHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
 
             if(providedHash === expectedHash) {
                 alert(`✅ GENUINE REQUEST!\n\nAmount: ₹${amt}\n\nUser ne game me paise kamaye hain. Ab tum use GPay kar sakte ho.`);
-                
-                // Mark code as paid
                 paidCodes.push(code);
                 localStorage.setItem('admin_paid_codes', JSON.stringify(paidCodes));
                 document.getElementById('verifyWdCode').value = '';
@@ -490,8 +487,15 @@
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
-                if(Math.random() < 0.015 && (obs.length === 0 || canvas.width - obs[obs.length-1].x > 150)) {
-                    obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
+                // 🚀 NEW FLAWLESS OBSTACLE ENGINE (No Long Gaps)
+                let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
+                
+                // Minimum gap is 160px.
+                if(lastDist > 160) { 
+                    // Force an obstacle if the gap reaches 280px, OR spawn randomly
+                    if(lastDist > 280 || Math.random() < 0.025) { 
+                        obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
+                    }
                 }
                 
                 for (let i = obs.length - 1; i >= 0; i--) {
