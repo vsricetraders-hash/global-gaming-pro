@@ -436,7 +436,7 @@
             updateUI();
         }
 
-        // 🚀 THE GOLDEN HOOK ENGINE & REALISTIC BOT SCORING 🚀
+        // 🚀 THE CASINO ENGINE: 40% Win Locked & Smart House Edge 🚀
         function initArena(fee, speedLevel) {
             isPlaying = true;
             document.getElementById('mainApp').style.display = 'none';
@@ -455,23 +455,22 @@
 
             if (gameTimerInt) clearInterval(gameTimerInt);
 
-            // Fetch User Details for First Win Hook
             const user = localStorage.getItem('nexus_active');
             const hasWonFirst10 = localStorage.getItem(user + '_first_win_10') === 'true';
             
-            // Determine the Bot's Target Final Score at the start of the match
             let targetBotScore = 0;
+            let isWeakBot = false;
             
             if (fee === 10 && !hasWonFirst10) {
-                // THE HOOK: Bot exactly targets 21. If user plays okay (22+), they win.
+                // GOLDEN HOOK: Pehla match bot exactly 21 pe rukega.
                 targetBotScore = 21; 
-            } else {
-                // NORMAL GAME: 80% chance of 33-39, 20% chance of 27-28.
-                let isWeakBot = Math.random() < 0.2; 
+            } else if (fee > 0) {
+                // 🚀 GUARANTEED 40% WIN RATE: 40% chance user jeetega, 60% bot jeetega.
+                isWeakBot = Math.random() < 0.4; 
                 if(isWeakBot) {
-                    targetBotScore = Math.floor(Math.random() * 2) + 27; // Gives 27 or 28
+                    targetBotScore = Math.floor(Math.random() * 3) + 27; // User jeetega (Bot gets 27-29)
                 } else {
-                    targetBotScore = Math.floor(Math.random() * 7) + 33; // Gives 33, 34... 39
+                    targetBotScore = Math.floor(Math.random() * 6) + 34; // Bot jeetega (Bot gets 34-39)
                 }
             }
 
@@ -483,7 +482,16 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
-                    // Smoothly distribute bot score over the 60 seconds
+                    // 🔥 SMART ADAPTIVE BOT 🔥
+                    // Agar bot ko jeetna tha (isWeakBot = false) aur user pro nikla (e.g. 44 maar diya)
+                    // Toh bot achanak apni speed badhayega aur user se 1-2 point aage nikal jayega!
+                    if (!isWeakBot && fee > 0 && !(fee === 10 && !hasWonFirst10)) {
+                        if (score >= targetBotScore - 3) {
+                            targetBotScore = score + Math.floor(Math.random() * 2) + 1; // Bot is always ahead
+                        }
+                    }
+
+                    // Smooth visual scoring for Bot
                     if(timeLeft > 0 && oppScore < targetBotScore) {
                         let chanceToScore = (targetBotScore - oppScore) / timeLeft;
                         if(Math.random() < chanceToScore) {
@@ -495,7 +503,7 @@
                         clearInterval(gameTimerInt); 
                         isPlaying = false;
                         
-                        // Force bot to exactly hit target if RNG missed it by 1 or 2 at the very end
+                        // Force bot to reach target at the end if RNG missed
                         if (oppScore < targetBotScore) {
                             oppScore = targetBotScore;
                         }
@@ -512,7 +520,8 @@
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
                 if(score > 10) currentSpeed = speedLevel + 2;
-                if(score > 25) currentSpeed = speedLevel + 3;
+                if(score > 20) currentSpeed = speedLevel + 3;
+                if(score > 35) currentSpeed = speedLevel + 4; 
 
                 p.dy += 0.8; 
                 p.y += p.dy; 
@@ -522,8 +531,9 @@
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
-                if(lastDist > 220) { 
-                    if(lastDist > 380 || Math.random() < 0.02) { 
+                
+                if(lastDist > 180) { 
+                    if(lastDist > 320 || Math.random() < 0.02) { 
                         obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
                     }
                 }
@@ -583,7 +593,6 @@
                 resMessage.innerText = `You won ₹${winAmt.toFixed(2)}`;
                 localStorage.setItem(user + '_bal', (bal + winAmt).toFixed(2));
                 
-                // 🚀 If they won their first 10 rs match, mark it so bot goes back to normal difficulty
                 if(fee === 10) {
                     localStorage.setItem(user + '_first_win_10', 'true');
                 }
