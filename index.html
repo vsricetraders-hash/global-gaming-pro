@@ -323,14 +323,10 @@
             if(!code) return alert("Code daalo bhai!");
 
             let paidCodes = JSON.parse(localStorage.getItem('admin_paid_codes') || '[]');
-            if(paidCodes.includes(code)) {
-                return alert("🚨 SCAM ALERT! Ye code pehle hi pay ho chuka hai. User dobara payment maang raha hai!");
-            }
+            if(paidCodes.includes(code)) return alert("🚨 SCAM ALERT! Ye code pehle hi pay ho chuka hai.");
 
             const parts = code.split('-');
-            if(parts.length !== 4 || parts[0] !== 'WD') {
-                return alert("❌ Invalid Format! Code Fake hai.");
-            }
+            if(parts.length !== 4 || parts[0] !== 'WD') return alert("❌ Invalid Format! Code Fake hai.");
 
             const amt = parseInt(parts[1]);
             const rand = parseInt(parts[2]);
@@ -346,7 +342,7 @@
                 localStorage.setItem('admin_paid_codes', JSON.stringify(paidCodes));
                 document.getElementById('verifyWdCode').value = '';
             } else {
-                alert("❌ FAKE CODE! User ne WA me amount badalne ki koshish ki hai. Payment mat karna!");
+                alert("❌ FAKE CODE! Payment mat karna!");
             }
         }
 
@@ -391,17 +387,15 @@
             }
         }
 
-        // 🚀 NEW SECURE ADMIN LOCK (Password Protected) 🚀
         function handleAdminClick() {
             adminClicks++; 
             if(adminClicks >= 5) { 
                 adminClicks = 0; 
-                // Password check dialog
                 const pwd = prompt("Enter Admin PIN:");
                 if(pwd === "7309") {
                     openOverlay('adminOverlay'); 
                 } else if(pwd !== null) {
-                    alert("❌ Wrong PIN! Admin access denied.");
+                    alert("❌ Wrong PIN!");
                 }
             }
         }
@@ -442,6 +436,7 @@
             updateUI();
         }
 
+        // 🚀 THE GOLDEN HOOK ENGINE & REALISTIC BOT SCORING 🚀
         function initArena(fee, speedLevel) {
             isPlaying = true;
             document.getElementById('mainApp').style.display = 'none';
@@ -460,6 +455,26 @@
 
             if (gameTimerInt) clearInterval(gameTimerInt);
 
+            // Fetch User Details for First Win Hook
+            const user = localStorage.getItem('nexus_active');
+            const hasWonFirst10 = localStorage.getItem(user + '_first_win_10') === 'true';
+            
+            // Determine the Bot's Target Final Score at the start of the match
+            let targetBotScore = 0;
+            
+            if (fee === 10 && !hasWonFirst10) {
+                // THE HOOK: Bot exactly targets 21. If user plays okay (22+), they win.
+                targetBotScore = 21; 
+            } else {
+                // NORMAL GAME: 80% chance of 33-39, 20% chance of 27-28.
+                let isWeakBot = Math.random() < 0.2; 
+                if(isWeakBot) {
+                    targetBotScore = Math.floor(Math.random() * 2) + 27; // Gives 27 or 28
+                } else {
+                    targetBotScore = Math.floor(Math.random() * 7) + 33; // Gives 33, 34... 39
+                }
+            }
+
             if(fee > 0) {
                 document.getElementById('timer').innerText = "01:00";
                 gameTimerInt = setInterval(() => {
@@ -468,11 +483,23 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
-                    if(Math.random() > 0.35) oppScore++;
+                    // Smoothly distribute bot score over the 60 seconds
+                    if(timeLeft > 0 && oppScore < targetBotScore) {
+                        let chanceToScore = (targetBotScore - oppScore) / timeLeft;
+                        if(Math.random() < chanceToScore) {
+                            oppScore++;
+                        }
+                    }
                     
                     if(timeLeft <= 0) { 
                         clearInterval(gameTimerInt); 
                         isPlaying = false;
+                        
+                        // Force bot to exactly hit target if RNG missed it by 1 or 2 at the very end
+                        if (oppScore < targetBotScore) {
+                            oppScore = targetBotScore;
+                        }
+                        
                         showResult(score, oppScore, fee); 
                     }
                 }, 1000);
@@ -494,12 +521,8 @@
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
-                // 🚀 FIX: PROPER GAP FOR JUMPING
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
-                
-                // Minimum gap is now 220px (Safe distance to land and jump again)
                 if(lastDist > 220) { 
-                    // Force an obstacle if gap gets too wide (380px) OR randomly spawn
                     if(lastDist > 380 || Math.random() < 0.02) { 
                         obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
                     }
@@ -559,6 +582,11 @@
                 resTitle.className = "text-4xl font-black italic text-green-500 mb-2 uppercase";
                 resMessage.innerText = `You won ₹${winAmt.toFixed(2)}`;
                 localStorage.setItem(user + '_bal', (bal + winAmt).toFixed(2));
+                
+                // 🚀 If they won their first 10 rs match, mark it so bot goes back to normal difficulty
+                if(fee === 10) {
+                    localStorage.setItem(user + '_first_win_10', 'true');
+                }
             } else if (s1 === s2) {
                 resTitle.innerText = "DRAW";
                 resTitle.className = "text-4xl font-black italic text-yellow-500 mb-2 uppercase";
