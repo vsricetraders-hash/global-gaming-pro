@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO | Ultimate Edition</title>
+    <title>NEXUS PRO | Perfect Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -61,7 +61,7 @@
             <div id="games" class="page-content active">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-[9px] font-black text-blue-400 tracking-[0.5em] uppercase">Supreme Arena</h2>
-                    <span class="text-[8px] text-green-500 font-bold animate-pulse">● 2,401 ONLINE</span>
+                    <span class="text-[8px] text-green-500 font-bold animate-pulse">● LIVE BATTLES</span>
                 </div>
                 
                 <div class="space-y-6">
@@ -233,7 +233,6 @@
             closeOverlay('adminOverlay');
         }
 
-        // --- INSTANT MATCH START (ZERO DELAY) ---
         function startMatch(fee, speedLevel) {
             const user = localStorage.getItem('nexus_active');
             const bal = parseFloat(localStorage.getItem(user + '_bal'));
@@ -246,7 +245,7 @@
             localStorage.setItem(user + '_bal', (bal - fee).toFixed(2));
             updateUI();
             
-            // Start Instantly
+            // No loading, direct enter
             initArena(fee, speedLevel);
         }
 
@@ -254,6 +253,7 @@
             initArena(0, 5);
         }
 
+        // --- PERFECTED GAME ENGINE ---
         function initArena(fee, speedLevel) {
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('gameArena').style.display = 'block';
@@ -263,14 +263,17 @@
             canvas.width = window.innerWidth - 60; 
             canvas.height = 420;
             
-            let p = {y:350, dy:0}, obs = [], score = 0, botScore = 0, timeLeft = 60;
+            let p = { y: 350, dy: 0, w: 35, h: 35 };
+            let obs = [];
+            let score = 0, botScore = 0, timeLeft = 60;
             let currentSpeed = speedLevel;
 
+            // Timer & Bot Score
             const tInt = setInterval(() => {
                 if(fee > 0) {
                     timeLeft--;
                     document.getElementById('timer').innerText = `00:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`;
-                    if(Math.random() > 0.7) botScore++;
+                    if(Math.random() > 0.6) botScore++;
                     if(timeLeft <= 0) { 
                         clearInterval(tInt); 
                         finish(score, botScore, fee); 
@@ -284,39 +287,70 @@
                 if(timeLeft <= 0 && fee > 0) return;
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
+                // Speed progression based on score
                 if(score > 10) currentSpeed = speedLevel + 2;
+                if(score > 25) currentSpeed = speedLevel + 3;
 
+                // Player Gravity Physics
                 p.dy += 0.8; 
                 p.y += p.dy; 
-                if(p.y > 350) p.y = 350;
+                if(p.y > 350) p.y = 350; // Floor limit
                 
+                // Draw Player (Blue)
                 ctx.fillStyle = '#3b82f6'; 
-                ctx.fillRect(60, p.y, 35, 35);
+                ctx.fillRect(60, p.y, p.w, p.h);
                 
-                if(Math.random() < 0.02) obs.push({x:canvas.width, w:30, h:45});
+                // Spawn Obstacles (prevent overlap by checking distance)
+                if(Math.random() < 0.015 && (obs.length === 0 || canvas.width - obs[obs.length-1].x > 150)) {
+                    obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
+                }
                 
-                obs.forEach((o, i) => {
+                for (let i = obs.length - 1; i >= 0; i--) {
+                    let o = obs[i];
                     o.x -= currentSpeed; 
+                    
+                    // Draw Obstacle (Red)
                     ctx.fillStyle = '#ff4444'; 
                     ctx.fillRect(o.x, 350, o.w, o.h);
                     
-                    if(60 < o.x + o.w - 5 && 95 > o.x + 5 && p.y > 310) { 
+                    // --- ACCURATE COLLISION DETECTION ---
+                    let hitX = (60 < o.x + o.w) && (60 + p.w > o.x);
+                    let hitY = (p.y + p.h > 350); 
+                    
+                    if (hitX && hitY) {
+                        // HIT! Penalty applied.
                         if(fee > 0) score = Math.max(0, score - 2); 
+                        obs.splice(i, 1); // Break the obstacle immediately
+                        
+                        // Red Flash effect for visual feedback
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        continue; 
                     }
-                    if(o.x + o.w < 0) { 
-                        obs.splice(i, 1); 
-                        score++; 
+                    
+                    // --- SUCCESSFUL JUMP (Scoring) ---
+                    if (o.x + o.w < 60 && !o.passed) {
+                        o.passed = true;
+                        score++;
                     }
-                });
+                    
+                    // Remove off-screen obstacles
+                    if (o.x + o.w < 0) {
+                        obs.splice(i, 1);
+                    }
+                }
                 
                 document.getElementById('liveScore').innerText = score;
                 requestAnimationFrame(draw);
             }
             
-            window.addEventListener('touchstart', (e) => { 
+            // Clean Jump Event (Prevents double jumps if tapped quickly)
+            function doJump(e) {
                 e.preventDefault(); 
-                if(p.y >= 335) p.dy = -13.5; 
-            }, {passive:false});
+                if(p.y >= 350) p.dy = -14; 
+            }
+            window.removeEventListener('touchstart', doJump);
+            window.addEventListener('touchstart', doJump, {passive: false});
             
             draw();
         }
@@ -329,7 +363,7 @@
                 alert(`VICTORY! You scored ${s}. Won ₹${win}`);
                 localStorage.setItem(user + '_bal', (bal + win).toFixed(2));
             } else { 
-                alert(`DEFEAT! Bot scored ${bs}, You scored ${s}. Try again.`); 
+                alert(`DEFEAT! Bot scored ${bs}, You scored ${s}.`); 
             }
             location.reload();
         }
