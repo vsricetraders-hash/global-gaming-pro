@@ -39,7 +39,7 @@
 </head>
 <body>
 
-    <div id="authScreen" class="fixed inset-0 z-[10000] bg-[#020617] p-10 flex-col justify-center" style="display: none;">
+    <div id="authScreen" class="fixed inset-0 z-[10000] bg-[#020617] p-10 flex flex-col justify-center" style="display: none;">
         <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-4 nexus-logo text-center">NexusPro</h1>
         <p class="text-[10px] text-gray-500 font-bold uppercase mb-12 italic tracking-widest text-center">Global Battle Arena</p>
         <div class="space-y-6">
@@ -110,7 +110,7 @@
                     <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs">Withdraw</button>
                 </div>
                 <div class="glass p-5 rounded-2xl flex gap-3">
-                    <input id="promoCode" type="text" placeholder="Promo Code" class="flex-1 bg-transparent outline-none text-xs font-bold uppercase italic px-2">
+                    <input id="promoCode" type="text" placeholder="Enter Secure Code" class="flex-1 bg-transparent outline-none text-xs font-bold uppercase italic px-2">
                     <button onclick="redeemCode()" class="bg-blue-500 px-6 py-2 rounded-xl text-[10px] font-black">REDEEM</button>
                 </div>
             </div>
@@ -140,7 +140,6 @@
                 <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="liveScore" class="text-xl font-black text-blue-500">0</span></div>
                 <button onclick="returnToArena()" ontouchstart="returnToArena(); event.stopPropagation();" class="bg-red-500/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-red-500/30 active:scale-95 cursor-pointer relative z-[99999]">QUIT</button>
             </div>
-            
             <canvas id="mainCanvas"></canvas>
             <p class="text-center mt-8 text-[10px] text-gray-500 uppercase tracking-widest font-black">Tap the Canvas to Jump</p>
         </div>
@@ -151,7 +150,6 @@
             <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-t-4 border-blue-500 bg-gradient-to-br from-[#020617] to-blue-900/20 relative z-[99999]">
                 <h2 id="resTitle" class="text-4xl font-black italic text-green-500 mb-2 uppercase">VICTORY</h2>
                 <p id="resMessage" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-8">You won ₹0.00</p>
-                
                 <div class="flex justify-between items-center bg-white/5 rounded-2xl p-6 mb-8 border border-white/10">
                     <div class="text-center">
                         <p class="text-[8px] text-gray-500 font-black uppercase mb-1">Your Score</p>
@@ -163,7 +161,6 @@
                         <h3 id="resOppScore" class="text-3xl font-black text-gray-400 italic">0</h3>
                     </div>
                 </div>
-                
                 <button onclick="returnToArena()" ontouchstart="returnToArena(); event.stopPropagation();" class="w-full bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40 active:scale-95 transition cursor-pointer relative z-[99999]">Back to Arena</button>
             </div>
         </div>
@@ -195,11 +192,23 @@
 
     <div id="adminOverlay" class="overlay" style="display: none;">
         <div class="flex flex-col min-h-full p-6 justify-center w-full max-w-sm mx-auto">
-            <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-red-500 uppercase">Admin Console</h2><button onclick="closeOverlay('adminOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
-            <div class="space-y-6">
-                <input id="adminUser" type="text" placeholder="Target Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-red-500 text-center">
-                <input id="adminAmt" type="number" placeholder="New Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-red-500 text-center">
-                <button onclick="setBalance()" class="w-full bg-red-600 py-6 rounded-3xl font-black uppercase text-xs">Update User Balance</button>
+            <div class="flex justify-between items-center mb-8"><h2 class="text-2xl font-black italic text-red-500 uppercase">Admin Power</h2><button onclick="closeOverlay('adminOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
+            
+            <div class="glass p-6 rounded-3xl border border-red-500/30 mb-6">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Generate Secure Promo Code</p>
+                <input id="genAmt" type="number" placeholder="Amount (e.g. 50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
+                <button onclick="generatePromo()" class="w-full bg-red-600 py-4 rounded-xl font-black uppercase text-[10px]">Create Code</button>
+                
+                <div class="mt-4 text-center">
+                    <p id="generatedCode" class="text-xl font-black text-green-400 tracking-widest uppercase"></p>
+                </div>
+            </div>
+
+            <div class="glass p-6 rounded-3xl">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Direct Balance Update (Local)</p>
+                <input id="adminUser" type="text" placeholder="Target Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
+                <input id="adminAmt" type="number" placeholder="New Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
+                <button onclick="setBalance()" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase text-[10px]">Update Local Balance</button>
             </div>
         </div>
     </div>
@@ -236,22 +245,65 @@
             document.getElementById('wallBal').innerText = "₹" + bal;
         }
 
-        function redeemCode() {
-            const code = document.getElementById('promoCode').value.toUpperCase();
-            const user = localStorage.getItem('nexus_active');
-            const current = parseFloat(localStorage.getItem(user + '_bal'));
+        // --- HACKER-PROOF PROMO CODE GENERATOR (For Admin) ---
+        function generatePromo() {
+            const amtStr = document.getElementById('genAmt').value;
+            if(!amtStr || amtStr <= 0) return alert("Enter valid amount!");
+            const amt = parseInt(amtStr);
             
-            if(code.startsWith('ADD')) {
-                const amt = parseInt(code.replace('ADD', ''));
-                if(!isNaN(amt)) {
-                    localStorage.setItem(user + '_bal', (current + amt).toFixed(2));
-                    alert(`₹${amt} Successfully Added!`);
-                    updateUI();
-                    document.getElementById('promoCode').value = '';
-                    return;
-                }
+            // 4 digit random number
+            const rand = Math.floor(1000 + Math.random() * 9000);
+            
+            // Secret Math Formula (Amount * 17 + Rand * 23) Modulo 8999 + 1000
+            const secretHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
+            
+            // Format: NX[Amt]-[Rand]-[Hash] -> Example: NX50-1234-5678
+            const finalCode = `NX${amt}-${rand}-${secretHash}`;
+            
+            document.getElementById('generatedCode').innerText = finalCode;
+        }
+
+        // --- HACKER-PROOF REDEEM LOGIC (For User) ---
+        function redeemCode() {
+            const code = document.getElementById('promoCode').value.toUpperCase().trim();
+            const user = localStorage.getItem('nexus_active');
+            const currentBal = parseFloat(localStorage.getItem(user + '_bal'));
+            
+            // Check if already used
+            let usedCodes = JSON.parse(localStorage.getItem(user + '_used_codes') || '[]');
+            if(usedCodes.includes(code)) {
+                return alert("Chalaki mat kar bhai! Ye code pehle hi use ho chuka hai.");
             }
-            alert("Invalid Promo Code!");
+
+            // Verify Code Format: NX[Amt]-[Rand]-[Hash]
+            const parts = code.split('-');
+            if(parts.length !== 3 || !parts[0].startsWith('NX')) {
+                return alert("Invalid or Fake Code!");
+            }
+
+            const amt = parseInt(parts[0].replace('NX', ''));
+            const rand = parseInt(parts[1]);
+            const providedHash = parseInt(parts[2]);
+
+            if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return alert("Invalid Code!");
+
+            // Run the secret formula to verify
+            const expectedHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
+
+            if(providedHash === expectedHash) {
+                // Valid Code! Give money
+                localStorage.setItem(user + '_bal', (currentBal + amt).toFixed(2));
+                
+                // Block this code forever for this user
+                usedCodes.push(code);
+                localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
+                
+                alert(`₹${amt} Successfully Added to Wallet!`);
+                updateUI();
+                document.getElementById('promoCode').value = '';
+            } else {
+                alert("Fake Code Detected! System Alert Triggered.");
+            }
         }
 
         function handleAdminClick() {
@@ -264,7 +316,7 @@
             const amt = document.getElementById('adminAmt').value;
             if(!target || !amt) return alert("Details bharo bhai!");
             localStorage.setItem(target + '_bal', parseFloat(amt).toFixed(2));
-            alert("Admin: Balance Updated!"); 
+            alert("Admin: Local Balance Updated!"); 
             updateUI(); 
             closeOverlay('adminOverlay');
         }
@@ -432,7 +484,7 @@
             }
             
             updateUI();
-            document.getElementById('resultOverlay').style.display = 'block';
+            document.getElementById('resultOverlay').style.display = 'flex';
         }
 
         function showPage(id) {
@@ -441,7 +493,7 @@
             document.getElementById(id).classList.add('active');
             event.currentTarget.classList.add('nav-active'); event.currentTarget.classList.remove('text-gray-500');
         }
-        function openOverlay(id) { document.getElementById(id).style.display = 'block'; }
+        function openOverlay(id) { document.getElementById(id).style.display = 'flex'; }
         function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
         function logout() { localStorage.removeItem('nexus_active'); location.reload(); }
     </script>
