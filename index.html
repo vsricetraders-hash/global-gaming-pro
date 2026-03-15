@@ -3,127 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO | Elite Arena</title>
+    <title>NEXUS PRO | VIP Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
-        body { background-color: #030303; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
-        .page-content { display: none; padding-bottom: 100px; }
-        .page-content.active { display: block; animation: slideUp 0.2s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .nav-active { color: #3b82f6 !important; }
-        #gameArena { display: none; position: fixed; inset: 0; background: #000; z-index: 1000; }
-        canvas { background: #050505; display: block; margin: 0 auto; border-radius: 24px; border: 1px solid #3b82f6; }
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;900&display=swap');
+        body { background: #030303; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; }
+        
+        /* Animated Gold Glow for VIP */
+        .gold-glow { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2); border: 1px solid rgba(234, 179, 8, 0.3); }
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        
+        .page-content { display: none; padding-bottom: 120px; }
+        .page-content.active { display: block; animation: slideUp 0.4s cubic-bezier(0, 0, 0.2, 1); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .nav-active { color: #3b82f6 !important; filter: drop-shadow(0 0 8px #3b82f6); }
+        .vip-card { background: linear-gradient(135deg, #1a1a1a 0%, #000 100%); position: relative; overflow: hidden; }
+        .vip-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, transparent, rgba(234,179,8,0.1), transparent); animation: rotate 4s linear infinite; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        #gameArena { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; }
+        canvas { background: #050505; display: block; margin: 0 auto; border-radius: 30px; border: 1px solid #3b82f6; }
     </style>
 </head>
 <body>
 
-    <nav class="fixed top-0 inset-x-0 z-[100] glass px-6 py-4 flex justify-between items-center border-b border-white/5">
-        <h1 class="text-2xl font-black italic text-blue-500 tracking-tighter uppercase">Nexus<span class="text-white">Pro</span></h1>
-        <div onclick="showPage('wallet')" class="bg-blue-600/10 border border-blue-500/20 px-4 py-1.5 rounded-full flex items-center gap-2 active:scale-95 transition">
-            <span class="text-xs font-black text-blue-400">₹0.00</span>
-            <i class="fa-solid fa-circle-plus text-blue-500 text-xs"></i>
+    <nav class="fixed top-0 inset-x-0 z-[100] glass px-6 py-5 flex justify-between items-center border-b border-white/5">
+        <h1 class="text-xl font-black italic text-blue-500 tracking-tighter" style="font-family:'Syncopate'">NEXUS<span class="text-white">PRO</span></h1>
+        <div onclick="showPage('wallet')" class="glass px-4 py-2 rounded-2xl border border-blue-500/30 flex items-center gap-2 active:scale-90 transition">
+            <span class="text-[10px] font-black text-blue-400">₹0.00</span>
+            <div class="bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center"><i class="fa-solid fa-plus text-[8px]"></i></div>
         </div>
     </nav>
 
-    <main class="mt-24 px-5">
+    <main class="mt-24 px-6">
 
         <div id="games" class="page-content active">
-            <h2 class="text-xl font-black mb-6 italic border-l-4 border-blue-500 pl-3 uppercase">Skill Battles</h2>
-            
-            <div class="glass p-5 rounded-[2.5rem] mb-4 border-l-4 border-blue-500">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h4 class="font-black uppercase italic tracking-tighter text-lg">Cyber Jump</h4>
-                        <p class="text-[9px] text-gray-500 font-bold uppercase">Game of Skill • Win Cash</p>
+            <h2 class="text-[10px] font-black text-gray-500 mb-6 tracking-[0.4em] uppercase">Battle Ground</h2>
+            <div class="vip-card p-6 rounded-[2.5rem] mb-6 border border-blue-500/20 shadow-2xl">
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 class="text-2xl font-black italic tracking-tighter uppercase mb-1">Cyber Jump</h3>
+                            <p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest leading-none">Global Skill Match</p>
+                        </div>
+                        <i class="fa-solid fa-bolt-lightning text-2xl text-blue-500 animate-pulse"></i>
                     </div>
-                    <span class="text-[8px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-black uppercase">Live</span>
-                </div>
-                <div class="flex gap-3">
-                    <button onclick="initGame()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase tracking-tighter active:scale-95 transition">Practice</button>
-                    <button onclick="alert('Starting Battle Engine... Deposit ₹10 to Play')" class="flex-1 bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase tracking-tighter shadow-lg shadow-blue-500/20 active:scale-95 transition">₹10 Battle</button>
-                </div>
-            </div>
-
-            <div class="glass p-5 rounded-[2.5rem] opacity-30">
-                <div class="flex justify-between items-center">
-                    <h4 class="font-black uppercase italic tracking-tighter">Reflex Master</h4>
-                    <i class="fa-solid fa-lock text-sm"></i>
+                    <div class="flex gap-4">
+                        <button onclick="initGame()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 active:scale-95 transition">Practice</button>
+                        <button class="flex-1 bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/30 active:scale-95 transition">₹10 Battle</button>
+                    </div>
                 </div>
             </div>
+            <div class="glass p-5 rounded-[2rem] opacity-30 flex justify-between items-center"><span class="text-[10px] font-black uppercase italic tracking-widest text-gray-500">More Games Loading...</span><i class="fa-solid fa-lock"></i></div>
         </div>
 
-        <div id="wallet" class="page-content text-center">
-            <div class="glass p-12 rounded-[3rem] mb-8 border-b-4 border-green-500 bg-gradient-to-b from-green-500/5 to-transparent">
-                <p class="text-[10px] text-gray-500 font-black uppercase mb-2 tracking-widest">Wallet Balance</p>
-                <h1 class="text-6xl font-black italic tracking-tighter">₹0.00</h1>
+        <div id="wallet" class="page-content">
+            <div class="glass p-12 rounded-[3rem] text-center mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/20 to-transparent">
+                <p class="text-[10px] text-gray-500 font-black uppercase mb-4 tracking-widest">Main Wallet</p>
+                <h1 class="text-6xl font-black italic tracking-tighter Nexus-logo">₹0.00</h1>
             </div>
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="alert('Opening Payment Gateway...')" class="bg-blue-600 py-5 rounded-[1.5rem] font-black uppercase text-xs active:scale-95 transition">Add Cash</button>
-                <button onclick="alert('Minimum Withdrawal: ₹100')" class="glass py-5 rounded-[1.5rem] font-black uppercase text-xs active:scale-95 transition">Withdraw</button>
+                <button onclick="alert('UPI Portal Opening...')" class="bg-blue-600 py-5 rounded-[1.5rem] font-black uppercase text-xs active:scale-95 transition">Add Cash</button>
+                <button class="glass py-5 rounded-[1.5rem] font-black uppercase text-xs active:scale-95 transition">Withdraw</button>
             </div>
         </div>
 
-        <div id="profile" class="page-content">
-            <div class="flex items-center gap-5 mb-8">
-                <div class="w-20 h-20 bg-blue-600 rounded-[2rem] flex items-center justify-center text-3xl font-black italic shadow-xl shadow-blue-500/10">H</div>
-                <div>
-                    <h2 class="text-2xl font-black italic tracking-tight">Harshit_Singh</h2>
-                    <p class="text-[10px] text-blue-500 font-bold uppercase tracking-widest leading-none">Pro Tier Member</p>
+        <div id="vip" class="page-content">
+            <div class="gold-glow p-8 rounded-[3rem] mb-8 bg-gradient-to-br from-yellow-900/20 to-transparent relative overflow-hidden">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-16 h-16 bg-yellow-500 rounded-3xl flex items-center justify-center text-3xl shadow-xl shadow-yellow-500/20"><i class="fa-solid fa-crown text-black"></i></div>
+                        <div>
+                            <h2 class="text-xl font-black italic uppercase italic tracking-tighter">Elite Member</h2>
+                            <p class="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Bronze Tier • Level 1</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 h-2 rounded-full mb-2"><div class="bg-yellow-500 h-full rounded-full w-[20%] shadow-lg shadow-yellow-500/50"></div></div>
+                    <p class="text-[8px] text-gray-500 font-bold uppercase">₹800 more to reach <span class="text-yellow-500 italic">Silver Tier</span></p>
                 </div>
             </div>
+
+            <h3 class="text-[10px] font-black text-gray-500 uppercase tracking-[0.4em] mb-4">Tier Privileges</h3>
             <div class="space-y-3">
-                <div class="glass p-5 rounded-2xl flex justify-between items-center text-xs font-bold italic"><span>My Contest History</span><i class="fa-solid fa-chevron-right opacity-30"></i></div>
-                <div class="glass p-5 rounded-2xl flex justify-between items-center text-xs font-bold italic"><span>Fair Play Policy</span><i class="fa-solid fa-shield-check opacity-30"></i></div>
-                <div onclick="alert('Connecting to Support...')" class="glass p-5 rounded-2xl flex justify-between items-center text-xs font-bold italic text-green-400"><span>Help & Support</span><i class="fa-solid fa-headset"></i></div>
+                <div class="glass p-5 rounded-2xl flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500"><i class="fa-solid fa-percent"></i></div>
+                    <div><h4 class="text-xs font-black uppercase italic">Low Commission</h4><p class="text-[8px] text-gray-500 font-bold">Pay only 5% on winnings</p></div>
+                </div>
+                <div class="glass p-5 rounded-2xl flex items-center gap-4">
+                    <div class="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center text-green-500"><i class="fa-solid fa-bolt"></i></div>
+                    <div><h4 class="text-xs font-black uppercase italic">Fast Payout</h4><p class="text-[8px] text-gray-500 font-bold">Withdrawals under 5 minutes</p></div>
+                </div>
             </div>
         </div>
     </main>
 
-    <footer class="fixed bottom-0 inset-x-0 glass px-6 py-4 flex justify-between items-center z-[100] border-t border-white/5">
+    <footer class="fixed bottom-0 inset-x-0 glass px-10 py-5 flex justify-between items-center z-[100] rounded-t-[2.5rem] border-t border-white/5">
         <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 nav-active transition">
-            <i class="fa-solid fa-gamepad text-lg"></i><span class="text-[7px] font-black uppercase tracking-tighter">Arena</span>
+            <i class="fa-solid fa-gamepad text-lg"></i><span class="text-[7px] font-black uppercase">Arena</span>
         </button>
         <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition">
-            <i class="fa-solid fa-wallet text-lg"></i><span class="text-[7px] font-black uppercase tracking-tighter">Wallet</span>
+            <i class="fa-solid fa-wallet text-lg"></i><span class="text-[7px] font-black uppercase">Wallet</span>
         </button>
-        <button onclick="showPage('profile')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition">
-            <i class="fa-solid fa-user-ninja text-lg"></i><span class="text-[7px] font-black uppercase tracking-tighter">Account</span>
+        <button onclick="showPage('vip')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition">
+            <i class="fa-solid fa-crown text-lg"></i><span class="text-[7px] font-black uppercase">VIP</span>
         </button>
     </footer>
 
     <div id="gameArena">
-        <div class="p-6 mt-4 flex justify-between items-center">
-            <h2 id="liveScore" class="text-4xl font-black text-blue-500 italic">0</h2>
-            <button onclick="location.reload()" class="bg-red-500/10 text-red-500 px-6 py-2 rounded-full text-[10px] font-black uppercase border border-red-500/20 active:scale-95">Quit Arena</button>
+        <div class="p-8 flex justify-between items-center mt-4">
+            <div class="glass px-6 py-2 rounded-2xl border-blue-500/40"><span id="liveScore" class="text-4xl font-black text-blue-500 italic">0</span></div>
+            <button onclick="location.reload()" class="bg-red-500/10 text-red-500 px-6 py-3 rounded-2xl text-[10px] font-black uppercase border border-red-500/20 active:scale-90">Abort</button>
         </div>
         <canvas id="mainCanvas"></canvas>
-        <p class="text-center mt-10 text-[10px] text-gray-600 font-bold tracking-[0.4em] animate-pulse uppercase italic">Tap Screen to Jump</p>
+        <p class="text-center mt-10 text-[9px] text-gray-600 font-black tracking-[0.5em] animate-pulse italic uppercase">Tap Screen to Jump</p>
     </div>
 
     <script>
-        // Page Control
-        function showPage(pId) {
+        function showPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => {
                 b.classList.remove('nav-active');
                 b.classList.add('text-gray-500');
             });
-            document.getElementById(pId).classList.add('active');
+            document.getElementById(id).classList.add('active');
             event.currentTarget.classList.add('nav-active');
             event.currentTarget.classList.remove('text-gray-500');
         }
 
-        // Clean Game Engine
         function initGame() {
-            document.getElementById('games').style.display = 'none';
             document.getElementById('gameArena').style.display = 'block';
             const canvas = document.getElementById('mainCanvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth - 40; canvas.height = 400;
-
+            canvas.width = window.innerWidth - 60; canvas.height = 400;
             let p = {y:350, dy:0}, obs = [], score = 0, frame = 0;
 
             function draw() {
@@ -131,40 +144,19 @@
                 p.dy += 0.6; p.y += p.dy;
                 if(p.y > 350) p.y = 350;
                 
-                // Draw Player (Neon Blue Square)
-                ctx.fillStyle = '#3b82f6';
-                ctx.shadowBlur = 15; ctx.shadowColor = '#3b82f6';
-                ctx.fillRect(50, p.y, 32, 32);
-                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#3b82f6'; ctx.shadowBlur = 20; ctx.shadowColor = '#3b82f6';
+                ctx.fillRect(50, p.y, 35, 35); ctx.shadowBlur = 0;
 
-                // Draw Obstacles (Red)
-                if(frame % 90 === 0) obs.push({x:canvas.width, w:30});
+                if(frame % 85 === 0) obs.push({x:canvas.width, w:30, h:40});
                 obs.forEach((o, i) => {
-                    o.x -= 5;
-                    ctx.fillStyle = '#ff4444';
-                    ctx.fillRect(o.x, 350, o.w, 35);
-
-                    // Collision Logic
-                    if(50 < o.x + o.w - 5 && 82 > o.x + 5 && p.y > 320) {
-                        alert("Session Ended! Your Score: " + score);
-                        location.reload();
-                    }
-                    if(o.x + o.w < 0) {
-                        obs.splice(i, 1);
-                        score++;
-                    }
+                    o.x -= 6; ctx.fillStyle = '#ff4444'; ctx.fillRect(o.x, 350, o.w, o.h);
+                    if(50 < o.x + o.w - 5 && 85 > o.x + 5 && p.y > 315) { alert("Score: " + score); location.reload(); }
+                    if(o.x + o.w < 0) { obs.splice(i, 1); score++; }
                 });
-
                 document.getElementById('liveScore').innerText = score;
-                frame++;
-                requestAnimationFrame(draw);
+                frame++; requestAnimationFrame(draw);
             }
-
-            window.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                if(p.y >= 340) p.dy = -12;
-            }, { passive: false });
-
+            window.addEventListener('touchstart', (e) => { e.preventDefault(); if(p.y >= 340) p.dy = -13; });
             draw();
         }
     </script>
