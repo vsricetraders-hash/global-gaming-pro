@@ -42,9 +42,10 @@
     <div id="authScreen" class="fixed inset-0 z-[10000] bg-[#020617] p-10 flex flex-col justify-center" style="display: none;">
         <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-4 nexus-logo text-center">NexusPro</h1>
         <p class="text-[10px] text-gray-500 font-bold uppercase mb-12 italic tracking-widest text-center">Global Battle Arena</p>
-        <div class="space-y-6">
+        <div class="space-y-4">
             <input id="userName" type="text" placeholder="Create Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
-            <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-blue-500/30 active:scale-95 transition">Enter Empire</button>
+            <input id="refCode" type="text" placeholder="Referral Code (Optional)" class="w-full bg-green-500/5 border border-green-500/30 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-green-500 transition-all text-center text-green-400 placeholder-green-700/50">
+            <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-blue-500/30 active:scale-95 transition mt-2">Enter Empire</button>
         </div>
     </div>
 
@@ -110,18 +111,38 @@
                     <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs">Withdraw</button>
                 </div>
                 <div class="glass p-5 rounded-2xl flex gap-3">
-                    <input id="promoCode" type="text" placeholder="Enter Secure Code" class="flex-1 bg-transparent outline-none text-xs font-bold uppercase italic px-2">
+                    <input id="promoCode" type="text" placeholder="Promo Code (e.g. ADD50-A)" class="flex-1 bg-transparent outline-none text-xs font-bold uppercase italic px-2">
                     <button onclick="redeemCode()" class="bg-blue-500 px-6 py-2 rounded-xl text-[10px] font-black">REDEEM</button>
                 </div>
             </div>
 
             <div id="vip" class="page-content">
-                <div class="battle-card p-8 rounded-[3.5rem] mb-8 border-l-4 border-yellow-500" onclick="handleAdminClick()">
+                <div class="battle-card p-8 rounded-[3.5rem] mb-6 border-l-4 border-yellow-500" onclick="handleAdminClick()">
                     <div class="flex items-center gap-5">
                         <div class="w-16 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center text-3xl shadow-xl shadow-yellow-500/30"><i class="fa-solid fa-crown text-black"></i></div>
                         <div><h2 id="userDisplay" class="text-2xl font-black italic uppercase">Gamer</h2><p class="text-[10px] text-yellow-500 font-black uppercase tracking-widest">Elite Member</p></div>
                     </div>
                 </div>
+
+                <div class="glass p-8 rounded-[3rem] mb-6 border-l-4 border-green-500 bg-gradient-to-br from-green-900/10 to-transparent">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-black italic uppercase text-green-400">Refer & Earn</h3>
+                            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">Get ₹20 Per Friend</p>
+                        </div>
+                        <i class="fa-solid fa-users text-xl text-green-500"></i>
+                    </div>
+                    
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex justify-between items-center mb-4">
+                        <span class="text-[10px] text-gray-500 font-black uppercase">Your Code:</span>
+                        <span id="myRefCode" class="text-sm font-black text-white italic tracking-widest"></span>
+                    </div>
+
+                    <button onclick="shareReferral()" class="w-full bg-green-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-green-500/30 active:scale-95 transition flex justify-center items-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Share on WhatsApp
+                    </button>
+                </div>
+
                 <button onclick="logout()" class="w-full glass py-5 rounded-2xl text-[10px] font-black uppercase text-red-500 active:scale-95">Logout Account</button>
             </div>
         </main>
@@ -198,7 +219,6 @@
                 <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Generate Secure Promo Code</p>
                 <input id="genAmt" type="number" placeholder="Amount (e.g. 50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
                 <button onclick="generatePromo()" class="w-full bg-red-600 py-4 rounded-xl font-black uppercase text-[10px]">Create Code</button>
-                
                 <div class="mt-4 text-center">
                     <p id="generatedCode" class="text-xl font-black text-green-400 tracking-widest uppercase"></p>
                 </div>
@@ -219,10 +239,22 @@
         let gameTimerInt = null;
 
         function loginUser() {
-            const user = document.getElementById('userName').value;
+            const user = document.getElementById('userName').value.trim();
+            const refCode = document.getElementById('refCode').value.trim();
+            
             if(!user) return alert("Enter Gamer ID!");
+            
+            const existingBal = localStorage.getItem(user + '_bal');
             localStorage.setItem('nexus_active', user);
-            if(!localStorage.getItem(user + '_bal')) localStorage.setItem(user + '_bal', '0.00');
+            
+            if(!existingBal) {
+                if(refCode) {
+                    localStorage.setItem(user + '_bal', '10.00'); 
+                    alert("🎉 Referral Code Applied! ₹10 Free Bonus Added.");
+                } else {
+                    localStorage.setItem(user + '_bal', '0.00');
+                }
+            }
             location.reload();
         }
 
@@ -234,8 +266,15 @@
                 document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
                 document.getElementById('userDisplay').innerText = user;
+                document.getElementById('myRefCode').innerText = user.toUpperCase();
                 updateUI();
             }
+        }
+
+        function shareReferral() {
+            const user = localStorage.getItem('nexus_active');
+            const text = `Bhai! Nexus Pro pe aaja khelne. Signup karte waqt mera Referral Code daal: *${user.toUpperCase()}* aur ₹10 FREE Bonus le!\n\nLink: ${window.location.href}`;
+            window.location.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
         }
 
         function updateUI() {
@@ -245,41 +284,26 @@
             document.getElementById('wallBal').innerText = "₹" + bal;
         }
 
-        // --- HACKER-PROOF PROMO CODE GENERATOR (For Admin) ---
         function generatePromo() {
             const amtStr = document.getElementById('genAmt').value;
             if(!amtStr || amtStr <= 0) return alert("Enter valid amount!");
             const amt = parseInt(amtStr);
-            
-            // 4 digit random number
             const rand = Math.floor(1000 + Math.random() * 9000);
-            
-            // Secret Math Formula (Amount * 17 + Rand * 23) Modulo 8999 + 1000
             const secretHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
-            
-            // Format: NX[Amt]-[Rand]-[Hash] -> Example: NX50-1234-5678
             const finalCode = `NX${amt}-${rand}-${secretHash}`;
-            
             document.getElementById('generatedCode').innerText = finalCode;
         }
 
-        // --- HACKER-PROOF REDEEM LOGIC (For User) ---
         function redeemCode() {
             const code = document.getElementById('promoCode').value.toUpperCase().trim();
             const user = localStorage.getItem('nexus_active');
-            const currentBal = parseFloat(localStorage.getItem(user + '_bal'));
+            const current = parseFloat(localStorage.getItem(user + '_bal'));
             
-            // Check if already used
             let usedCodes = JSON.parse(localStorage.getItem(user + '_used_codes') || '[]');
-            if(usedCodes.includes(code)) {
-                return alert("Chalaki mat kar bhai! Ye code pehle hi use ho chuka hai.");
-            }
+            if(usedCodes.includes(code)) return alert("Chalaki mat kar bhai! Ye code pehle hi use ho chuka hai.");
 
-            // Verify Code Format: NX[Amt]-[Rand]-[Hash]
             const parts = code.split('-');
-            if(parts.length !== 3 || !parts[0].startsWith('NX')) {
-                return alert("Invalid or Fake Code!");
-            }
+            if(parts.length !== 3 || !parts[0].startsWith('NX')) return alert("Invalid or Fake Code!");
 
             const amt = parseInt(parts[0].replace('NX', ''));
             const rand = parseInt(parts[1]);
@@ -287,17 +311,12 @@
 
             if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return alert("Invalid Code!");
 
-            // Run the secret formula to verify
             const expectedHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
 
             if(providedHash === expectedHash) {
-                // Valid Code! Give money
-                localStorage.setItem(user + '_bal', (currentBal + amt).toFixed(2));
-                
-                // Block this code forever for this user
+                localStorage.setItem(user + '_bal', (current + amt).toFixed(2));
                 usedCodes.push(code);
                 localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
-                
                 alert(`₹${amt} Successfully Added to Wallet!`);
                 updateUI();
                 document.getElementById('promoCode').value = '';
@@ -323,7 +342,6 @@
 
         function startMatch(fee, speedLevel) {
             if(isPlaying) return; 
-            
             const user = localStorage.getItem('nexus_active');
             const bal = parseFloat(localStorage.getItem(user + '_bal'));
             
@@ -342,11 +360,9 @@
         function returnToArena() {
             isPlaying = false;
             if(gameTimerInt) clearInterval(gameTimerInt);
-            
             document.getElementById('gameArena').style.display = 'none';
             document.getElementById('resultOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
-            
             updateUI();
         }
 
@@ -376,7 +392,10 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
-                    if(Math.random() > 0.6) oppScore++;
+                    // 🚀 TERA PROFIT LOGIC (HOUSE ALWAYS WINS)
+                    // Ab bot laghbhag 65% times score badhayega. 1 min mein 38-42 score fix hai.
+                    // Is score ko cross karna normal user ke bas mein nahi hoga.
+                    if(Math.random() > 0.35) oppScore++;
                     
                     if(timeLeft <= 0) { 
                         clearInterval(gameTimerInt); 
@@ -390,7 +409,6 @@
 
             function draw() {
                 if(!isPlaying) return; 
-                
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
                 if(score > 10) currentSpeed = speedLevel + 2;
@@ -410,7 +428,6 @@
                 for (let i = obs.length - 1; i >= 0; i--) {
                     let o = obs[i];
                     o.x -= currentSpeed; 
-                    
                     ctx.fillStyle = '#ff4444'; 
                     ctx.fillRect(o.x, 350, o.w, o.h);
                     
@@ -431,12 +448,8 @@
                     }
                     if (o.x + o.w < 0) { obs.splice(i, 1); }
                 }
-                
                 document.getElementById('liveScore').innerText = score;
-                
-                if(isPlaying || fee === 0) {
-                    requestAnimationFrame(draw);
-                }
+                if(isPlaying || fee === 0) requestAnimationFrame(draw);
             }
             
             canvas.ontouchstart = function(e) {
@@ -444,25 +457,19 @@
                 e.stopPropagation(); 
                 if(p.y >= 350) p.dy = -14;
             };
-            canvas.onmousedown = function(e) { 
-                if(p.y >= 350) p.dy = -14;
-            };
-            
+            canvas.onmousedown = function(e) { if(p.y >= 350) p.dy = -14; };
             draw();
         }
 
         function showResult(myScore, oppScore, fee) {
             const user = localStorage.getItem('nexus_active');
             const bal = parseFloat(localStorage.getItem(user + '_bal'));
-            
             document.getElementById('gameArena').style.display = 'none';
-            
             const s1 = Number(myScore);
             const s2 = Number(oppScore);
             
             document.getElementById('resYourScore').innerText = s1;
             document.getElementById('resOppScore').innerText = s2;
-            
             const resTitle = document.getElementById('resTitle');
             const resMessage = document.getElementById('resMessage');
             
@@ -482,7 +489,6 @@
                 resTitle.className = "text-4xl font-black italic text-red-500 mb-2 uppercase";
                 resMessage.innerText = "Better luck next time";
             }
-            
             updateUI();
             document.getElementById('resultOverlay').style.display = 'flex';
         }
