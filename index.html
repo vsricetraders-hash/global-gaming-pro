@@ -432,8 +432,8 @@
                     let hitY = (p.y + p.h > 350); 
                     
                     if (hitX && hitY) {
-                        // 🚀 TERA IDEA: -1 Penalty kar di gayi hai
-                        if(fee > 0) score = Math.max(0, score - 1); 
+                        // 🚀 FIX: Practice ho ya Real, dono me -1 hoga
+                        score = Math.max(0, score - 1); 
                         obs.splice(i, 1); 
                         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
