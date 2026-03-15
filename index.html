@@ -3,64 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS ARCADE | Global Arena</title>
+    <title>NEXUS INDIA | Professional Gaming Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        #gameCanvas { background: #0a0a0a; border: 2px solid #3b82f6; display: none; margin: 0 auto; width: 100%; max-width: 400px; height: 500px; border-radius: 20px; touch-action: none; }
+        .neon-border { border: 1px solid rgba(59, 130, 246, 0.5); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+        #gameCanvas { background: #0a0a0a; border: 2px solid #3b82f6; display: none; margin: 0 auto; width: 100%; max-width: 400px; height: 500px; border-radius: 24px; touch-action: none; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 md:p-8">
+
     <div id="dashboard">
-        <header class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-black tracking-tighter text-blue-500 italic">NEXUS<span class="text-white">ARCADE</span></h1>
-            <div class="glass px-4 py-1 rounded-full text-[10px] font-bold border-blue-500/30">UK_SERVER_01: <span class="text-green-400">ONLINE</span></div>
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-black tracking-tighter text-blue-500 italic">NEXUS<span class="text-white">INDIA</span></h1>
+                <p class="text-[8px] text-gray-500 tracking-[0.3em] mt-1 uppercase">India's Leading Skill Arena</p>
+            </div>
+            <div class="glass px-4 py-2 rounded-full text-[10px] font-bold border-blue-500/20 text-blue-400">
+                SECURE SERVER
+            </div>
         </header>
 
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="glass p-4 rounded-2xl border-l-4 border-blue-500">
-                <p class="text-[10px] uppercase text-gray-500 mb-1">Live Balance</p>
-                <h2 class="text-2xl font-bold">$0.00</h2>
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="glass p-5 rounded-3xl border-b-4 border-blue-500">
+                <p class="text-[10px] uppercase text-gray-500 font-bold mb-1">Total Winnings</p>
+                <h2 id="balance" class="text-3xl font-black tracking-tight">₹0.00</h2>
             </div>
-            <div class="glass p-4 rounded-2xl border-l-4 border-purple-500">
-                <p class="text-[10px] uppercase text-gray-500 mb-1">Global Rank</p>
-                <h2 class="text-2xl font-bold">#--</h2>
+            <div class="glass p-5 rounded-3xl border-b-4 border-green-500">
+                <p class="text-[10px] uppercase text-gray-500 font-bold mb-1">Player Status</p>
+                <h2 class="text-3xl font-black tracking-tight text-green-400">VERIFIED</h2>
             </div>
         </div>
 
-        <div class="glass p-5 rounded-3xl mb-6">
-            <h3 class="text-sm font-bold mb-3 flex justify-between">Live Tournaments <span class="text-blue-400 animate-pulse text-[10px]">● MATCHMAKING</span></h3>
-            <div id="log" class="text-[10px] space-y-2 opacity-70"></div>
+        <div class="glass p-6 rounded-[2rem] mb-8">
+            <h3 class="text-xs font-black uppercase tracking-widest text-blue-400 mb-4 italic">Live Activity Feed</h3>
+            <div id="log" class="text-[11px] space-y-3 font-medium opacity-80">
+                </div>
         </div>
 
-        <button onclick="initGame()" class="w-full bg-white text-black py-4 rounded-2xl font-black text-lg hover:scale-[1.02] transition active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]">START MATCH ($1.00 ENTRY)</button>
+        <button onclick="handlePlayClick()" class="w-full bg-blue-600 text-white py-5 rounded-[1.5rem] font-black text-xl neon-border active:scale-95 transition mb-10">
+            KHELO AUR JEETO (₹10 ENTRY)
+        </button>
+
+        <footer class="grid grid-cols-3 gap-2 text-[8px] text-gray-600 uppercase font-bold text-center">
+            <div class="p-2 glass rounded-lg">Skill Based</div>
+            <div class="p-2 glass rounded-lg">Instant UPI</div>
+            <div class="p-2 glass rounded-lg">Anti-Cheat</div>
+        </footer>
     </div>
 
     <div id="arena" class="hidden text-center">
-        <div class="flex justify-between items-center mb-4 px-2">
-            <span id="scoreDisplay" class="text-xl font-bold">Score: 0</span>
-            <button onclick="quitGame()" class="text-red-500 text-xs font-bold uppercase">Quit</button>
+        <div class="flex justify-between items-center mb-6 px-4">
+            <span id="scoreDisplay" class="text-2xl font-black text-blue-500">POINTS: 0</span>
+            <button onclick="quitGame()" class="glass px-4 py-2 rounded-full text-[10px] font-bold text-red-500">EXIT</button>
         </div>
         <canvas id="gameCanvas"></canvas>
-        <p class="mt-4 text-gray-500 text-xs">TAP TO JUMP & AVOID OBSTACLES</p>
     </div>
 
     <script>
+        // Live Feed with Indian Names for Trust
         const log = document.getElementById('log');
-        const bots = ["CryptoWhale", "Shadow_UK", "Nova_Gamer", "ProMax_99", "Zenith_Player"];
+        const botEvents = [
+            "Rahul_K. won ₹150 in Cyber Jump",
+            "Anjali_99 withdrew ₹500 via UPI",
+            "Match Found: Karan vs Bot_Alpha",
+            "System: Prize Pool Updated to ₹5,000"
+        ];
         
         setInterval(() => {
-            const bot = bots[Math.floor(Math.random() * bots.length)];
+            const event = botEvents[Math.floor(Math.random() * botEvents.length)];
             const entry = document.createElement('div');
-            entry.innerHTML = `<span class="text-blue-400">MATCH:</span> ${bot} joined high-stakes arena`;
+            entry.className = "border-l-2 border-blue-500/30 pl-3 py-1";
+            entry.innerHTML = `<span class="text-gray-500 mr-2">●</span> ${event}`;
             log.prepend(entry);
-            if(log.childNodes.length > 4) log.removeChild(log.lastChild);
+            if(log.childNodes.length > 3) log.removeChild(log.lastChild);
         }, 4000);
+
+        function handlePlayClick() {
+            if(confirm("Zero Balance! Start Practice Match?")) { initGame(); }
+        }
 
         function initGame() {
             document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('arena').style.display = 'block';
+            document.getElementById('arena').classList.remove('hidden');
             document.getElementById('gameCanvas').style.display = 'block';
             startCyberJump();
         }
@@ -75,23 +101,22 @@
 
             function draw() {
                 ctx.clearRect(0, 0, 400, 500);
-                // Player
-                ctx.fillStyle = '#3b82f6';
-                ctx.fillRect(50, playerY, 30, 30);
-                // Gravity
+                ctx.fillStyle = '#3b82f6'; ctx.fillRect(50, playerY, 30, 30);
                 playerY += 4; if(playerY > 400) playerY = 400;
                 playerY -= jumpPower; if(jumpPower > 0) jumpPower -= 1;
-                // Obstacles
-                if(frame % 80 === 0) obstacles.push({x: 400, w: 20 + Math.random() * 30});
+                if(frame % 80 === 0) obstacles.push({x: 400, w: 30 + Math.random() * 40});
                 obstacles.forEach((ob, i) => {
                     ob.x -= 5; ctx.fillStyle = '#ef4444'; ctx.fillRect(ob.x, 400, ob.w, 30);
-                    if(ob.x < 80 && ob.x > 20 && playerY > 370) { alert("Game Over! Score: " + score); quitGame(); }
+                    if(ob.x < 80 && ob.x > 20 && playerY > 370) { 
+                        alert("OUT! Score: " + score + "\nJoin Contest to win Real Cash!"); 
+                        quitGame(); 
+                    }
                     if(ob.x === 0) score++;
                 });
-                document.getElementById('scoreDisplay').innerText = "Score: " + score;
+                document.getElementById('scoreDisplay').innerText = "POINTS: " + score;
                 frame++; requestAnimationFrame(draw);
             }
-            canvas.addEventListener('touchstart', () => { if(playerY >= 390) jumpPower = 25; });
+            canvas.addEventListener('touchstart', (e) => { e.preventDefault(); if(playerY >= 390) jumpPower = 25; });
             draw();
         }
     </script>
