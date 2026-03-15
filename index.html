@@ -3,230 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO | The Ultimate Esports Empire</title>
+    <title>NEXUS PRO | Ultimate Gaming</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;700;900&display=swap');
-        
-        :root { --blue: #3b82f6; --gold: #eab308; --bg: #030303; }
-        
-        body { 
-            background: radial-gradient(circle at 0% 0%, #0a1128 0%, #000 50%, #000b1a 100%);
-            color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent;
-        }
-
-        /* Pro Grid Background */
-        body::before {
-            content: ""; position: fixed; inset: 0;
-            background-image: linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px; z-index: -1;
-        }
-
+        body { background: radial-gradient(circle at 0% 0%, #0a1128 0%, #000 50%, #000b1a 100%); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+        body::before { content: ""; position: fixed; inset: 0; background-image: linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px); background-size: 40px 40px; z-index: -1; }
         .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .nexus-logo { font-family: 'Syncopate', sans-serif; letter-spacing: -2px; }
-        
         .page-content { display: none; height: 82vh; overflow-y: auto; padding-bottom: 150px; scrollbar-width: none; }
-        .page-content::-webkit-scrollbar { display: none; }
-        .page-content.active { display: block; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        
+        .page-content.active { display: block; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        .battle-card {
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6));
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            transition: all 0.3s ease;
-        }
-        .battle-card:active { transform: scale(0.97); border-color: var(--blue); }
-
-        .nav-active { color: var(--blue) !important; filter: drop-shadow(0 0 10px var(--blue)); }
-
-        /* Overlays */
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; padding: 30px; overflow-y: auto; }
-        #gameArena { background: #000; padding: 0; }
-        canvas { background: #050505; display: block; margin: 0 auto; border-radius: 30px; border: 1px solid var(--blue); }
+        .battle-card { background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(59, 130, 246, 0.1); transition: all 0.3s ease; }
+        .nav-active { color: #3b82f6 !important; filter: drop-shadow(0 0 10px #3b82f6); }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; padding: 25px; overflow-y: auto; }
+        canvas { background: #050505; display: block; margin: 0 auto; border-radius: 30px; border: 1px solid #3b82f6; }
     </style>
 </head>
 <body>
 
     <nav class="fixed top-0 inset-x-0 z-[100] glass px-6 py-5 flex justify-between items-center border-b border-white/5">
-        <h1 class="text-xl font-black nexus-logo italic text-blue-500 uppercase">Nexus<span class="text-white">Pro</span></h1>
+        <h1 class="text-xl font-black italic text-blue-500 uppercase tracking-tighter" style="font-family:'Syncopate'">Nexus<span class="text-white">Pro</span></h1>
         <div onclick="showPage('wallet')" class="bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-2xl flex items-center gap-2 active:scale-90 transition">
             <span class="text-[10px] font-black text-blue-400">₹0.00</span>
-            <div class="bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center"><i class="fa-solid fa-plus text-[8px]"></i></div>
+            <div class="bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center shadow-lg"><i class="fa-solid fa-plus text-[8px]"></i></div>
         </div>
     </nav>
 
     <main class="mt-28 px-6">
-        
         <div id="games" class="page-content active">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-[9px] font-black text-blue-500/60 tracking-[0.4em] uppercase">Battle Ground</h2>
-                <span class="text-[8px] text-green-500 font-bold animate-pulse uppercase italic">● 2,401 Players Online</span>
+                <h2 class="text-[9px] font-black text-blue-500/60 tracking-[0.5em] uppercase">Elite Arena</h2>
+                <span class="text-[8px] text-green-500 font-bold animate-pulse">● LIVE MATCHES</span>
             </div>
-
-            <div class="space-y-6">
-                <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-blue-600 relative overflow-hidden">
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start mb-6">
-                            <div>
-                                <h3 class="text-2xl font-black italic tracking-tighter uppercase mb-1">Cyber Jump</h3>
-                                <p class="text-[9px] text-blue-400 font-bold uppercase italic tracking-widest leading-none">High-Speed Battle • ₹10</p>
-                            </div>
-                            <i class="fa-solid fa-bolt-lightning text-2xl text-blue-500"></i>
-                        </div>
-                        <div class="flex gap-4">
-                            <button onclick="initGame()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition">Practice</button>
-                            <button onclick="alert('Insufficient Balance. Please Add Cash.')" class="flex-1 bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/40 active:scale-95 transition">Enter Battle</button>
-                        </div>
-                    </div>
+            <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-blue-600">
+                <div class="flex justify-between items-start mb-6">
+                    <div><h3 class="text-2xl font-black italic uppercase tracking-tighter">Cyber Jump</h3><p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest">Global Battle • Entry ₹10</p></div>
+                    <i class="fa-solid fa-bolt-lightning text-2xl text-blue-500"></i>
                 </div>
-
-                <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-purple-600 opacity-80">
-                    <div class="flex justify-between items-start mb-6">
-                        <div><h3 class="text-2xl font-black italic tracking-tighter uppercase mb-1">Reflex Strike</h3><p class="text-[9px] text-purple-400 font-bold uppercase tracking-widest italic leading-none">Coming Soon</p></div>
-                        <i class="fa-solid fa-crosshairs text-2xl text-purple-600"></i>
-                    </div>
-                </div>
-
-                <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-orange-600 opacity-60">
-                    <div class="flex justify-between items-start mb-6">
-                        <div><h3 class="text-2xl font-black italic tracking-tighter uppercase mb-1">Turbo Drift</h3><p class="text-[9px] text-orange-400 font-bold uppercase tracking-widest italic leading-none">VIP Members Only</p></div>
-                        <i class="fa-solid fa-gauge-high text-2xl text-orange-600"></i>
-                    </div>
+                <div class="flex gap-4">
+                    <button onclick="initGame()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase">Practice</button>
+                    <button onclick="openOverlay('depositOverlay')" class="flex-1 bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40">Play Now</button>
                 </div>
             </div>
         </div>
 
         <div id="wallet" class="page-content">
             <div class="glass p-12 rounded-[3.5rem] text-center mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent">
-                <p class="text-[10px] text-gray-500 font-black uppercase mb-4 tracking-[0.3em]">Total Winnings</p>
+                <p class="text-[10px] text-gray-500 font-black uppercase mb-4 tracking-[0.3em]">Available Balance</p>
                 <h1 class="text-6xl font-black italic tracking-tighter mb-2">₹0.00</h1>
-                <p class="text-[8px] text-green-500 font-bold uppercase">Safe Settlement Enabled</p>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-10">
-                <button onclick="alert('Opening UPI Payment Gateway...')" class="bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs shadow-2xl shadow-blue-500/20 active:scale-95 transition">Add Cash</button>
-                <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs active:scale-95 transition">Withdraw</button>
-            </div>
-            <div class="flex justify-around opacity-30 px-4 mt-10">
-                <i class="fa-solid fa-shield-halved text-2xl"></i>
-                <i class="fa-solid fa-bolt text-2xl text-yellow-500"></i>
-                <i class="fa-solid fa-fingerprint text-2xl text-blue-500"></i>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="openOverlay('depositOverlay')" class="bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs shadow-2xl shadow-blue-500/20">Add Cash</button>
+                <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs">Withdraw</button>
             </div>
         </div>
 
         <div id="vip" class="page-content">
-            <div class="battle-card p-8 rounded-[3.5rem] mb-8 border-l-4 border-yellow-500 bg-gradient-to-br from-yellow-900/10 to-transparent">
-                <div class="flex items-center gap-5 mb-8">
+            <div class="battle-card p-8 rounded-[3.5rem] mb-6 border-l-4 border-yellow-500">
+                <div class="flex items-center gap-5 mb-6">
                     <div class="w-16 h-16 bg-yellow-500 rounded-3xl flex items-center justify-center text-3xl shadow-xl shadow-yellow-500/20"><i class="fa-solid fa-crown text-black"></i></div>
-                    <div><h2 class="text-xl font-black italic tracking-tighter uppercase italic">Elite VIP</h2><p class="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Bronze Tier • Lvl 1</p></div>
+                    <div><h2 class="text-xl font-black italic uppercase tracking-tighter">Elite Lounge</h2><p class="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Bronze • Lvl 1</p></div>
                 </div>
                 <div class="bg-white/5 h-2 rounded-full mb-3"><div class="bg-yellow-500 h-full rounded-full w-[15%]"></div></div>
-                <p class="text-[8px] text-gray-500 font-bold uppercase text-right tracking-widest">₹850 more to reach <span class="text-yellow-500 italic">Silver</span></p>
+                <p class="text-[8px] text-gray-500 font-bold uppercase text-right tracking-widest italic">₹900 to Silver</p>
             </div>
-            
-            <h3 class="text-[9px] font-black text-gray-500 uppercase tracking-[0.4em] mb-4 pl-2">VIP Privileges</h3>
-            <div class="space-y-4">
-                <div class="glass p-5 rounded-2xl flex items-center gap-4 border-l border-white/5">
-                    <i class="fa-solid fa-percent text-blue-500"></i>
-                    <div><h4 class="text-[10px] font-black uppercase italic leading-none mb-1">Low Commission</h4><p class="text-[8px] text-gray-600 font-bold uppercase italic">Save 50% on Entry fees</p></div>
-                </div>
-                <div onclick="openOverlay('referOverlay')" class="glass p-5 rounded-2xl flex items-center justify-between border-l border-green-500/30 active:scale-95 transition">
-                    <div class="flex items-center gap-4"><i class="fa-solid fa-gift text-green-500"></i><div><h4 class="text-[10px] font-black uppercase italic leading-none mb-1">Refer & Earn</h4><p class="text-[8px] text-gray-600 font-bold uppercase italic">Get ₹25 per friend</p></div></div>
-                    <i class="fa-solid fa-chevron-right text-[10px] opacity-20"></i>
-                </div>
+            <div onclick="openOverlay('referOverlay')" class="glass p-6 rounded-2xl flex items-center justify-between border-l border-green-500/40 active:scale-95 transition">
+                <div class="flex items-center gap-4"><i class="fa-solid fa-gift text-green-500"></i><div><h4 class="text-[10px] font-black uppercase italic leading-none mb-1">Refer & Earn</h4><p class="text-[8px] text-gray-600 font-bold uppercase italic">Earn ₹25 per friend</p></div></div>
+                <i class="fa-solid fa-chevron-right text-[10px] opacity-20"></i>
             </div>
         </div>
     </main>
 
-    <footer class="fixed bottom-0 inset-x-0 glass px-12 py-6 flex justify-between items-center z-[150] rounded-t-[3rem] border-t border-white/5">
-        <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 nav-active transition">
-            <i class="fa-solid fa-gamepad text-xl"></i><span class="text-[7px] font-black uppercase tracking-widest">Arena</span>
-        </button>
-        <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition">
-            <i class="fa-solid fa-wallet text-xl"></i><span class="text-[7px] font-black uppercase tracking-widest">Wallet</span>
-        </button>
-        <button onclick="showPage('vip')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition">
-            <i class="fa-solid fa-crown text-xl"></i><span class="text-[7px] font-black uppercase tracking-widest">VIP</span>
-        </button>
-    </footer>
+    <div id="depositOverlay" class="overlay">
+        <div class="flex justify-between items-center mb-8"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Add Money</h2><button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl opacity-30"></i></button></div>
+        <div class="glass p-6 rounded-[2.5rem] border-dashed border-blue-500/50 text-center mb-8">
+            <p class="text-[10px] text-gray-500 font-black uppercase mb-3 tracking-widest">Pay via UPI</p>
+            <p class="text-xl font-black italic tracking-wider text-white mb-4">9336258808@ptaxis</p>
+            <button onclick="navigator.clipboard.writeText('9336258808@ptaxis'); alert('UPI ID Copied!')" class="bg-blue-600 px-8 py-3 rounded-full text-[10px] font-black uppercase shadow-lg shadow-blue-500/30">Copy UPI ID</button>
+        </div>
+        <div class="space-y-4">
+            <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center mb-4 italic">Bhai, Payment ke baad screenshot bhejo:</h3>
+            <a href="https://wa.me/917309433678" target="_blank" class="flex items-center justify-between bg-green-600/10 border border-green-500/30 p-5 rounded-2xl active:scale-95 transition">
+                <div class="flex items-center gap-4"><i class="fa-brands fa-whatsapp text-2xl text-green-500"></i><span class="text-xs font-black uppercase italic">WhatsApp Support</span></div>
+                <i class="fa-solid fa-chevron-right opacity-20"></i>
+            </a>
+            <a href="https://t.me/Iamvaibhav90" target="_blank" class="flex items-center justify-between bg-blue-600/10 border border-blue-500/30 p-5 rounded-2xl active:scale-95 transition">
+                <div class="flex items-center gap-4"><i class="fa-brands fa-telegram text-2xl text-blue-400"></i><span class="text-xs font-black uppercase italic">Telegram Support</span></div>
+                <i class="fa-solid fa-chevron-right opacity-20"></i>
+            </a>
+        </div>
+    </div>
 
     <div id="withdrawOverlay" class="overlay">
-        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Payout Portal</h2><button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl opacity-30"></i></button></div>
+        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Withdraw</h2><button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl opacity-30"></i></button></div>
         <div class="space-y-6">
-            <div><label class="text-[10px] text-gray-500 font-black uppercase tracking-widest block mb-4">Payout Method</label><div class="grid grid-cols-2 gap-4"><button class="bg-blue-600/20 border border-blue-500/40 py-5 rounded-2xl flex flex-col items-center gap-2"><i class="fa-solid fa-mobile-screen"></i><span class="text-[9px] font-black uppercase italic">UPI</span></button><button class="glass opacity-30 py-5 rounded-2xl flex flex-col items-center gap-2 pointer-events-none"><i class="fa-solid fa-building-columns"></i><span class="text-[9px] font-black uppercase italic">Bank</span></button></div></div>
-            <div><label class="text-[10px] text-gray-500 font-black uppercase tracking-widest block mb-4">UPI ID</label><input type="text" placeholder="example@upi" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500"></div>
+            <div><label class="text-[10px] text-gray-500 font-black uppercase tracking-widest block mb-4">Enter UPI ID</label><input type="text" placeholder="yourname@upi" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500"></div>
             <div><label class="text-[10px] text-gray-500 font-black uppercase tracking-widest block mb-4">Amount (Min ₹100)</label><input type="number" placeholder="₹0.00" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500"></div>
-            <button onclick="alert('Withdrawal Request Sent Successfully!')" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-2xl shadow-blue-500/40">Request Settlement</button>
+            <button onclick="alert('Withdrawal Request Sent!')" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-2xl shadow-blue-500/40">Request Payout</button>
         </div>
     </div>
 
     <div id="referOverlay" class="overlay">
         <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-green-500 uppercase">Refer & Earn</h2><button onclick="closeOverlay('referOverlay')"><i class="fa-solid fa-xmark text-2xl opacity-30"></i></button></div>
-        <div class="text-center mb-10"><div class="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-gift text-4xl text-green-500"></i></div><h3 class="text-xl font-black italic mb-2 uppercase">Earn ₹25 per Friend</h3><p class="text-[10px] text-gray-500 font-bold px-6 leading-relaxed">Share your unique code. When your friend makes their first deposit, you both get a bonus!</p></div>
-        <div class="glass p-6 rounded-[2rem] border-dashed border-white/20 text-center mb-10"><p class="text-[9px] text-gray-600 font-black uppercase mb-3">Your Referral Code</p><p id="refCode" class="text-3xl font-black italic tracking-[0.2em] text-blue-500 mb-4 uppercase">NEXUS-551</p><button onclick="alert('Code Copied!')" class="bg-white text-black px-8 py-3 rounded-full text-[10px] font-black uppercase">Copy Code</button></div>
+        <div class="text-center"><div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-gift text-3xl text-green-500"></i></div><h3 class="text-xl font-black italic mb-2 uppercase">Earn ₹25 Bonus</h3><p class="text-[9px] text-gray-500 font-bold px-8 mb-8 uppercase">Invite your friends and earn rewards when they play!</p><div class="glass p-6 rounded-[2rem] border-dashed border-white/10"><p class="text-[8px] text-gray-600 font-black uppercase mb-2">Your Invite Code</p><p class="text-3xl font-black italic text-blue-500 tracking-widest mb-4">VAIBHAV-100</p><button onclick="alert('Code Copied!')" class="bg-white text-black px-8 py-3 rounded-full text-[10px] font-black uppercase">Share Now</button></div></div>
     </div>
 
+    <footer class="fixed bottom-0 inset-x-0 glass px-12 py-6 flex justify-between items-center z-[150] rounded-t-[3rem] border-t border-white/5">
+        <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 nav-active transition"><i class="fa-solid fa-gamepad text-xl"></i><span class="text-[7px] font-black uppercase tracking-widest">Arena</span></button>
+        <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition"><i class="fa-solid fa-wallet text-xl"></i><span class="text-[7px] font-black uppercase tracking-widest">Wallet</span></button>
+        <button onclick="showPage('vip')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition"><i class="fa-solid fa-crown text-xl"></i><span class="text-[7px] font-black uppercase tracking-widest">VIP</span></button>
+    </footer>
+
     <div id="gameArena" class="overlay">
-        <div class="p-8 flex justify-between items-center mt-4">
-            <div class="glass px-6 py-2 rounded-2xl border-blue-500/40 shadow-lg shadow-blue-500/10"><span id="liveScore" class="text-4xl font-black text-blue-500 italic">0</span></div>
-            <button onclick="location.reload()" class="bg-red-500/10 text-red-500 px-6 py-3 rounded-2xl text-[10px] font-black uppercase border border-red-500/20 active:scale-95 transition">Quit Arena</button>
-        </div>
+        <div class="p-8 flex justify-between items-center mt-4"><div class="glass px-6 py-2 rounded-2xl border-blue-500/40"><span id="liveScore" class="text-4xl font-black text-blue-500 italic">0</span></div><button onclick="location.reload()" class="bg-red-500/10 text-red-500 px-6 py-3 rounded-2xl text-[10px] font-black uppercase border border-red-500/20 active:scale-95 transition">Quit</button></div>
         <canvas id="mainCanvas" class="mt-4"></canvas>
-        <p class="text-center mt-12 text-[9px] text-gray-600 font-black tracking-[0.6em] animate-pulse uppercase italic">Tap Screen to Jump</p>
     </div>
 
     <script>
-        // Page Navigation Logic
         function showPage(id) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('nav-active'); b.classList.add('text-gray-500'); });
             document.getElementById(id).classList.add('active');
             event.currentTarget.classList.add('nav-active'); event.currentTarget.classList.remove('text-gray-500');
         }
-
-        // Overlay Control Logic
         function openOverlay(id) { document.getElementById(id).style.display = 'block'; }
         function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
 
-        // --- THE GAME ENGINE (Cyber Jump Pro) ---
         function initGame() {
             document.getElementById('gameArena').style.display = 'block';
             const canvas = document.getElementById('mainCanvas');
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth - 60; canvas.height = 420;
-
-            let p = {y:350, dy:0}, obs = [], score = 0, frame = 0;
-            let speed = 5; let gap = 95;
-
+            let p = {y:350, dy:0}, obs = [], score = 0, frame = 0, speed = 5;
             function draw() {
                 ctx.clearRect(0,0,canvas.width,canvas.height);
-                
-                // Difficulty Logic (Speed increases with score)
-                if(score > 5) speed = 6.5; if(score > 12) speed = 8.5; if(score > 20) { speed = 11; gap = 75; }
-
+                if(score > 5) speed = 7; if(score > 15) speed = 9;
                 p.dy += 0.75; p.y += p.dy;
                 if(p.y > 350) p.y = 350;
-                
-                // Draw Neon Player
                 ctx.fillStyle = '#3b82f6'; ctx.shadowBlur = 20; ctx.shadowColor = '#3b82f6';
                 ctx.fillRect(60, p.y, 35, 35); ctx.shadowBlur = 0;
-
-                // Spawning Obstacles
-                if(frame % gap === 0) obs.push({x:canvas.width, w:32, h:45});
-                
+                if(frame % 90 === 0) obs.push({x:canvas.width, w:30, h:45});
                 obs.forEach((o, i) => {
                     o.x -= speed;
                     ctx.fillStyle = '#ff4444'; ctx.fillRect(o.x, 350, o.w, o.h);
-
-                    // Collision (Hitbox)
-                    if(60 < o.x + o.w - 5 && 95 > o.x + 5 && p.y > 310) {
-                        alert("BATTLE ENDED!\nFinal Score: " + score + "\nDifficulty Level: " + Math.floor(speed));
-                        location.reload();
-                    }
+                    if(60 < o.x + o.w - 5 && 95 > o.x + 5 && p.y > 310) { alert("GAME OVER! Score: " + score); location.reload(); }
                     if(o.x + o.w < 0) { obs.splice(i, 1); score++; }
                 });
-
                 document.getElementById('liveScore').innerText = score;
                 frame++; requestAnimationFrame(draw);
             }
