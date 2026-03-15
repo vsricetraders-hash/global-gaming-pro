@@ -205,8 +205,10 @@
         <div class="flex flex-col min-h-full p-6 justify-center w-full max-w-sm mx-auto">
             <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Withdraw</h2><button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="space-y-6">
-                <input type="text" placeholder="UPI ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-black italic outline-none text-center">
-                <button onclick="alert('Withdrawal Request Sent to Admin!')" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs">Request Payout</button>
+                <input id="withUpi" type="text" placeholder="Enter UPI ID (e.g. name@paytm)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none text-center">
+                <input id="withAmt" type="number" placeholder="Amount (Min ₹50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none text-center">
+                <button onclick="processWithdraw()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-lg shadow-blue-500/40 active:scale-95 transition">Request Payout</button>
+                <p class="text-[9px] text-gray-500 font-bold uppercase text-center mt-4">Note: Payouts are verified before processing.</p>
             </div>
         </div>
     </div>
@@ -215,20 +217,24 @@
         <div class="flex flex-col min-h-full p-6 justify-center w-full max-w-sm mx-auto">
             <div class="flex justify-between items-center mb-8"><h2 class="text-2xl font-black italic text-red-500 uppercase">Admin Power</h2><button onclick="closeOverlay('adminOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             
+            <div class="glass p-6 rounded-3xl border border-blue-500/30 mb-6 bg-blue-900/10">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Verify Payout Request</p>
+                <input id="verifyWdCode" type="text" placeholder="Paste WD- Code Here" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-blue-500 text-center mb-4">
+                <button onclick="verifyWithdrawal()" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase text-[10px] shadow-lg">Verify & Mark Paid</button>
+            </div>
+
             <div class="glass p-6 rounded-3xl border border-red-500/30 mb-6">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Generate Secure Promo Code</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Generate Deposit Promo</p>
                 <input id="genAmt" type="number" placeholder="Amount (e.g. 50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
                 <button onclick="generatePromo()" class="w-full bg-red-600 py-4 rounded-xl font-black uppercase text-[10px]">Create Code</button>
-                <div class="mt-4 text-center">
-                    <p id="generatedCode" class="text-xl font-black text-green-400 tracking-widest uppercase"></p>
-                </div>
+                <div class="mt-4 text-center"><p id="generatedCode" class="text-xl font-black text-green-400 tracking-widest uppercase"></p></div>
             </div>
 
             <div class="glass p-6 rounded-3xl">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Direct Balance Update (Local)</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Local Balance Update</p>
                 <input id="adminUser" type="text" placeholder="Target Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
                 <input id="adminAmt" type="number" placeholder="New Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
-                <button onclick="setBalance()" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase text-[10px]">Update Local Balance</button>
+                <button onclick="setBalance()" class="w-full bg-yellow-600 text-black py-4 rounded-xl font-black uppercase text-[10px]">Update Local Balance</button>
             </div>
         </div>
     </div>
@@ -241,12 +247,9 @@
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
             const refCode = document.getElementById('refCode').value.trim();
-            
             if(!user) return alert("Enter Gamer ID!");
-            
             const existingBal = localStorage.getItem(user + '_bal');
             localStorage.setItem('nexus_active', user);
-            
             if(!existingBal) {
                 if(refCode) {
                     localStorage.setItem(user + '_bal', '10.00'); 
@@ -282,6 +285,75 @@
             const bal = parseFloat(localStorage.getItem(user + '_bal') || '0.00').toFixed(2);
             document.getElementById('topBal').innerText = "₹" + bal;
             document.getElementById('wallBal').innerText = "₹" + bal;
+        }
+
+        // 🚀 SMART & SECURE WITHDRAW SYSTEM
+        function processWithdraw() {
+            const upi = document.getElementById('withUpi').value.trim();
+            const amtStr = document.getElementById('withAmt').value.trim();
+            const amt = parseInt(amtStr); 
+            const user = localStorage.getItem('nexus_active');
+            let currentBal = parseFloat(localStorage.getItem(user + '_bal') || '0.00');
+
+            if (!upi) return alert("Bhai, apna UPI ID toh daal!");
+            if (isNaN(amt) || amt < 50) return alert("Minimum withdrawal ₹50 hai mere bhai!");
+            if (amt > currentBal) return alert("Tere wallet mein itne paise nahi hain!");
+
+            // Paisa deduct
+            currentBal -= amt;
+            localStorage.setItem(user + '_bal', currentBal.toFixed(2));
+            updateUI();
+
+            // Withdraw Hash Logic (Different from deposit logic)
+            const rand = Math.floor(1000 + Math.random() * 9000);
+            const secretHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
+            const wdCode = `WD-${amt}-${rand}-${secretHash}`;
+
+            closeOverlay('withdrawOverlay');
+            document.getElementById('withUpi').value = '';
+            document.getElementById('withAmt').value = '';
+
+            const adminPhone = "917309433678"; 
+            const msg = `🚨 *NEW PAYOUT REQUEST* 🚨%0A%0A👤 *Gamer ID:* ${user}%0A💳 *UPI ID:* ${upi}%0A💰 *Amount:* ₹${amt}%0A🔐 *Secure Code:* ${wdCode}%0A%0A_Admin, please verify this code in your panel before paying._`;
+
+            window.location.href = `https://wa.me/${adminPhone}?text=${msg}`;
+        }
+
+        // 🚀 ADMIN VERIFIER FOR PAYOUTS
+        function verifyWithdrawal() {
+            const code = document.getElementById('verifyWdCode').value.toUpperCase().trim();
+            if(!code) return alert("Code daalo bhai!");
+
+            // Check against admin's local paid list
+            let paidCodes = JSON.parse(localStorage.getItem('admin_paid_codes') || '[]');
+            if(paidCodes.includes(code)) {
+                return alert("🚨 SCAM ALERT! Ye code pehle hi pay ho chuka hai. User dobara payment maang raha hai!");
+            }
+
+            const parts = code.split('-');
+            if(parts.length !== 4 || parts[0] !== 'WD') {
+                return alert("❌ Invalid Format! Code Fake hai.");
+            }
+
+            const amt = parseInt(parts[1]);
+            const rand = parseInt(parts[2]);
+            const providedHash = parseInt(parts[3]);
+
+            if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return alert("❌ Invalid Code!");
+
+            // Re-calculate hash
+            const expectedHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
+
+            if(providedHash === expectedHash) {
+                alert(`✅ GENUINE REQUEST!\n\nAmount: ₹${amt}\n\nUser ne game me paise kamaye hain. Ab tum use GPay kar sakte ho.`);
+                
+                // Mark code as paid
+                paidCodes.push(code);
+                localStorage.setItem('admin_paid_codes', JSON.stringify(paidCodes));
+                document.getElementById('verifyWdCode').value = '';
+            } else {
+                alert("❌ FAKE CODE! User ne WA me amount badalne ki koshish ki hai. Payment mat karna!");
+            }
         }
 
         function generatePromo() {
@@ -432,7 +504,6 @@
                     let hitY = (p.y + p.h > 350); 
                     
                     if (hitX && hitY) {
-                        // 🚀 FIX: Practice ho ya Real, dono me -1 hoga
                         score = Math.max(0, score - 1); 
                         obs.splice(i, 1); 
                         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
