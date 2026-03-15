@@ -3,50 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS PRO | Professional Arena</title>
+    <title>NEXUS PRO | Cloud Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;700;900&display=swap');
         body { background: radial-gradient(circle at 50% -20%, #1e3a8a 0%, #0f172a 40%, #020617 100%); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-        body::before { content: ""; position: fixed; inset: 0; background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px); background-size: 45px 45px; z-index: -1; }
         .glass { background: rgba(255, 255, 255, 0.01); backdrop-filter: blur(35px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .page-content { display: none; height: 82vh; overflow-y: auto; padding-bottom: 180px; scrollbar-width: none; }
         .page-content.active { display: block; animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .battle-card { background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .nav-active { color: #3b82f6 !important; filter: drop-shadow(0 0 10px #3b82f6); }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.99); z-index: 5000; padding: 25px; overflow-y: auto; }
-        canvas { background: #020617; border-radius: 35px; border: 1px solid #1e40af; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.99); z-index: 5000; padding: 25px; }
+        canvas { background: #020617; border-radius: 35px; border: 1px solid #1e40af; width: 100%; max-width: 400px; margin: 0 auto; display: block; }
         .nexus-logo { font-family: 'Syncopate', sans-serif; letter-spacing: -2px; }
-        .auth-step { display: none; }
-        .auth-step.active { display: block; }
     </style>
 </head>
 <body>
 
-    <div id="authOverlay" class="fixed inset-0 z-[6000] bg-[#020617] p-10 flex flex-col justify-center">
+    <div id="authScreen" class="fixed inset-0 z-[6000] bg-[#020617] p-10 flex flex-col justify-center">
         <h1 class="text-3xl font-black italic text-blue-500 uppercase mb-4 nexus-logo">NexusPro</h1>
-        <div id="stepMobile" class="auth-step active">
-            <p class="text-[10px] text-gray-500 font-bold uppercase mb-8 italic">Step 1: Mobile Login</p>
-            <div class="space-y-6">
-                <input id="loginPhone" type="number" placeholder="Enter Mobile Number" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500">
-                <button onclick="goToStep('stepOTP')" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs">Get OTP</button>
-            </div>
-        </div>
-        <div id="stepOTP" class="auth-step">
-            <p class="text-[10px] text-gray-500 font-bold uppercase mb-8 italic">Step 2: OTP Verification</p>
-            <div class="space-y-6">
-                <input id="loginOTP" type="number" placeholder="4 Digit OTP" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-center text-xl font-black tracking-widest outline-none focus:border-blue-500">
-                <button onclick="goToStep('stepUser')" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs">Verify</button>
-            </div>
-        </div>
-        <div id="stepUser" class="auth-step">
-            <p class="text-[10px] text-gray-500 font-bold uppercase mb-8 italic">Step 3: Unique Username</p>
-            <div class="space-y-6">
-                <input id="loginUser" type="text" placeholder="Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500">
-                <button onclick="finalizeLogin()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs">Join Arena</button>
-            </div>
+        <p class="text-[10px] text-gray-500 font-bold uppercase mb-12 tracking-widest italic">Cloud Sync Enabled</p>
+        <div class="space-y-6">
+            <input id="loginUser" type="text" placeholder="Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500">
+            <button onclick="handleLogin()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-blue-500/30">Login to Cloud</button>
         </div>
     </div>
 
@@ -55,189 +35,157 @@
             <h1 class="text-xl font-black italic text-blue-500 uppercase tracking-tighter nexus-logo">NexusPro</h1>
             <div onclick="showPage('wallet')" class="bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-2xl flex items-center gap-2">
                 <span id="topBal" class="text-xs font-black text-blue-400">₹0.00</span>
-                <div class="bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center shadow-lg"><i class="fa-solid fa-plus text-[8px]"></i></div>
+                <i class="fa-solid fa-sync-alt text-[8px] text-blue-500 animate-spin"></i>
             </div>
         </nav>
 
         <main class="mt-28 px-6">
             <div id="games" class="page-content active">
-                <div class="space-y-6">
-                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-blue-500">
-                        <div class="flex justify-between items-start mb-6">
-                            <div><h3 class="text-xl font-black italic uppercase">Cyber Jump</h3><p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest leading-none italic">Entry ₹10 • Win ₹100</p></div>
-                            <i class="fa-solid fa-bolt-lightning text-xl text-blue-500"></i>
-                        </div>
-                        <div class="flex gap-3">
-                            <button onclick="initGame(5)" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase">Practice</button>
-                            <button onclick="checkEntry(10, 5)" class="flex-1 bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase">₹10 Play</button>
-                        </div>
+                <div class="glass p-6 rounded-[2.5rem] border-l-4 border-blue-500 mb-6">
+                    <div class="flex justify-between items-start mb-6">
+                        <div><h3 class="text-xl font-black italic uppercase">Cyber Battle</h3><p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest italic leading-none">1 Min Battle • Entry ₹10</p></div>
+                        <i class="fa-solid fa-bolt text-xl text-blue-500"></i>
                     </div>
-                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-purple-500">
-                        <div class="flex justify-between items-start mb-6">
-                            <div><h3 class="text-xl font-black italic uppercase text-purple-400">Cyber Jump Gold</h3><p class="text-[9px] text-purple-400 font-bold uppercase tracking-widest leading-none italic">Entry ₹50 • Win ₹500</p></div>
-                            <i class="fa-solid fa-crown text-xl text-purple-500"></i>
-                        </div>
-                        <div class="flex gap-3">
-                            <button onclick="initGame(7)" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase">Practice</button>
-                            <button onclick="checkEntry(50, 7)" class="flex-1 bg-purple-600 py-4 rounded-2xl text-[10px] font-black uppercase">₹50 Play</button>
-                        </div>
-                    </div>
-                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-yellow-500">
-                        <div class="flex justify-between items-start mb-6">
-                            <div><h3 class="text-xl font-black italic uppercase text-yellow-500">Cyber Jump VIP</h3><p class="text-[9px] text-yellow-500 font-bold uppercase tracking-widest leading-none italic">Entry ₹100 • Win ₹1000</p></div>
-                            <i class="fa-solid fa-trophy text-xl text-yellow-500"></i>
-                        </div>
-                        <div class="flex gap-3">
-                            <button onclick="initGame(9)" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase">Practice</button>
-                            <button onclick="checkEntry(100, 9)" class="flex-1 bg-yellow-600 py-4 rounded-2xl text-[10px] font-black uppercase text-black">₹100 Play</button>
-                        </div>
-                    </div>
+                    <button onclick="startMatchmaking(10)" class="w-full bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/30">Find Opponent (₹10)</button>
                 </div>
             </div>
 
             <div id="wallet" class="page-content text-center">
                 <div class="glass p-12 rounded-[3.5rem] mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent">
-                    <p class="text-[10px] text-gray-500 font-black uppercase mb-2">My Balance</p>
+                    <p class="text-[10px] text-gray-500 font-black uppercase mb-2">Cloud Balance</p>
                     <h1 id="wallBal" class="text-6xl font-black italic tracking-tighter">₹0.00</h1>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="openOverlay('depositOverlay')" class="bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs">Add Cash</button>
-                    <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs">Withdraw</button>
-                </div>
-            </div>
-
-            <div id="vip" class="page-content">
-                <div class="battle-card p-8 rounded-[3rem] border-l-4 border-yellow-500" onclick="handleAdminClick()">
-                    <h2 id="userDisplay" class="text-2xl font-black italic uppercase mb-2">Gamer</h2>
-                    <p class="text-[10px] text-yellow-500 font-black uppercase italic leading-none">Elite Bronze Member</p>
-                </div>
-                <button onclick="logout()" class="w-full glass py-5 mt-6 rounded-2xl text-[10px] font-black uppercase text-red-500">Logout</button>
+                <button onclick="window.location.href='https://wa.me/917309433678'" class="w-full bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs">Add Cash via WhatsApp</button>
             </div>
         </main>
 
-        <footer class="fixed bottom-0 inset-x-0 glass px-12 py-7 flex justify-between items-center z-[150] border-t border-white/5 rounded-t-[3.5rem]">
-            <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 nav-active"><i class="fa-solid fa-gamepad text-2xl"></i><span class="text-[7px] font-black uppercase">Arena</span></button>
-            <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500"><i class="fa-solid fa-wallet text-2xl"></i><span class="text-[7px] font-black uppercase">Wallet</span></button>
-            <button onclick="showPage('vip')" class="nav-btn flex flex-col items-center gap-1 text-gray-500"><i class="fa-solid fa-crown text-2xl"></i><span class="text-[7px] font-black uppercase">VIP</span></button>
+        <footer class="fixed bottom-0 inset-x-0 glass px-12 py-7 flex justify-between items-center z-[150] rounded-t-[3.5rem] border-t border-white/5">
+            <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 nav-active transition"><i class="fa-solid fa-gamepad text-2xl"></i><span class="text-[7px] font-black uppercase">Arena</span></button>
+            <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition"><i class="fa-solid fa-wallet text-2xl"></i><span class="text-[7px] font-black uppercase">Wallet</span></button>
         </footer>
     </div>
 
-    <div id="depositOverlay" class="overlay">
-        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Add Money</h2><button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
-        <div class="glass p-8 rounded-[3rem] border-dashed border-blue-500/40 text-center mb-8">
-            <p class="text-xl font-black italic text-white mb-6">9336258808@ptaxis</p>
-            <button onclick="navigator.clipboard.writeText('9336258808@ptaxis'); alert('UPI Copied!')" class="bg-blue-600 px-10 py-4 rounded-full text-[10px] font-black uppercase">Copy UPI ID</button>
-        </div>
-        <div class="space-y-4">
-            <p class="text-center text-[10px] text-gray-500 italic uppercase mb-4">Pay & Send Screenshot for Instant Balance:</p>
-            <button onclick="window.location.href='https://wa.me/917309433678?text=Bhai%20Payment%20kar%20diya%20hai%20balance%20update%20kar%20do'" class="w-full bg-green-600/20 border border-green-500 p-5 rounded-2xl flex justify-between items-center active:scale-95 transition">
-                <span class="text-xs font-black uppercase italic">WhatsApp Screenshot</span><i class="fa-brands fa-whatsapp text-2xl text-green-500"></i>
-            </button>
-            <button onclick="window.location.href='https://t.me/Iamvaibhav90'" class="w-full bg-blue-600/20 border border-blue-500 p-5 rounded-2xl flex justify-between items-center active:scale-95 transition">
-                <span class="text-xs font-black uppercase italic">Telegram Support</span><i class="fa-brands fa-telegram text-2xl text-blue-400"></i>
-            </button>
-        </div>
-    </div>
-
-    <div id="withdrawOverlay" class="overlay">
-        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Withdraw</h2><button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
-        <div class="space-y-6">
-            <input id="withUPI" type="text" placeholder="UPI ID (example@upi)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-black italic outline-none">
-            <input id="withAmt" type="number" placeholder="Amount (Min ₹100)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm font-black italic outline-none">
-            <button onclick="alert('Withdrawal request sent to Admin!')" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs">Request Settlement</button>
-        </div>
-    </div>
-
-    <div id="adminOverlay" class="overlay">
-        <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-red-500 uppercase">Admin</h2><button onclick="closeOverlay('adminOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
-        <div class="space-y-6">
-            <input id="admUser" type="text" placeholder="Username" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none">
-            <input id="admAmt" type="number" placeholder="New Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none">
-            <button onclick="setBalance()" class="w-full bg-red-600 py-6 rounded-3xl font-black uppercase text-xs">Update Now</button>
-        </div>
+    <div id="matchOverlay" class="overlay flex flex-col items-center justify-center">
+        <div class="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+        <h2 class="text-xl font-black italic uppercase animate-pulse">Finding Real Player...</h2>
     </div>
 
     <div id="gameArena" class="overlay">
-        <div class="p-8 flex justify-between items-center mt-6"><div class="glass px-8 py-3 rounded-2xl"><span id="liveScore" class="text-4xl font-black text-blue-500 italic">0</span></div><button onclick="location.reload()" class="bg-red-500/10 text-red-500 px-8 py-3 rounded-2xl text-[10px] font-black uppercase border border-red-500/20">Quit</button></div>
-        <canvas id="mainCanvas" class="mt-8"></canvas>
+        <div class="flex justify-between items-center mb-6 px-4">
+            <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="timer" class="text-2xl font-black">01:00</span></div>
+            <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="liveScore" class="text-2xl font-black text-blue-500">0</span></div>
+        </div>
+        <canvas id="mainCanvas"></canvas>
     </div>
 
     <script>
-        let adminClicks = 0;
-        function goToStep(sId) { 
-            document.querySelectorAll('.auth-step').forEach(s => s.classList.remove('active'));
-            document.getElementById(sId).classList.add('active'); 
-        }
-        function finalizeLogin() {
-            const u = document.getElementById('loginUser').value;
-            if(!u) return alert("Username dalo!");
-            localStorage.setItem('active_user', u);
-            if(!localStorage.getItem(u + '_bal')) localStorage.setItem(u + '_bal', '0.00');
+        // TERA SUPABASE CONFIG
+        const SB_URL = 'https://kqjgnbtrrvuqrnpquiut.supabase.co';
+        const SB_KEY = 'sb_publishable_IDUG0HJGESoGB5grcECqcQ_zTrs4e83';
+        const supabase = window.supabase.createClient(SB_URL, SB_KEY);
+
+        let activeUser = localStorage.getItem('nexus_user');
+
+        async function handleLogin() {
+            const user = document.getElementById('loginUser').value;
+            if(!user) return alert("Username dalo!");
+            
+            // Check if user exists, else create
+            const { data, error } = await supabase.from('profiles').select('*').eq('username', user).single();
+            if(!data) {
+                await supabase.from('profiles').insert([{ username: user, balance: 0 }]);
+            }
+            localStorage.setItem('nexus_user', user);
             location.reload();
         }
+
         window.onload = () => {
-            const u = localStorage.getItem('active_user');
-            if(u) {
-                document.getElementById('authOverlay').style.display = 'none';
+            if(activeUser) {
+                document.getElementById('authScreen').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                document.getElementById('userDisplay').innerText = u;
-                updateUI();
+                syncBalance();
+                // Auto sync every 10 seconds
+                setInterval(syncBalance, 10000);
             }
         }
-        function updateUI() {
-            const u = localStorage.getItem('active_user');
-            const b = parseFloat(localStorage.getItem(u + '_bal') || '0.00').toFixed(2);
-            document.getElementById('topBal').innerText = "₹" + b;
-            document.getElementById('wallBal').innerText = "₹" + b;
-        }
-        function checkEntry(fee, diff) {
-            const u = localStorage.getItem('active_user');
-            const bal = parseFloat(localStorage.getItem(u + '_bal') || '0.00');
-            if(bal >= fee) {
-                localStorage.setItem(u + '_bal', (bal - fee).toFixed(2));
-                updateUI();
-                initGame(diff);
-            } else { openOverlay('depositOverlay'); }
-        }
-        function handleAdminClick() { adminClicks++; if(adminClicks >= 5) { openOverlay('adminOverlay'); adminClicks = 0; } }
-        function setBalance() {
-            const u = document.getElementById('admUser').value;
-            const a = document.getElementById('admAmt').value;
-            localStorage.setItem(u + '_bal', a); alert("Done!"); updateUI(); closeOverlay('adminOverlay');
-        }
-        function showPage(id) {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('nav-active'); b.classList.add('text-gray-500'); });
-            document.getElementById(id).classList.add('active');
-            event.currentTarget.classList.add('nav-active'); event.currentTarget.classList.remove('text-gray-500');
-        }
-        function openOverlay(id) { document.getElementById(id).style.display = 'block'; }
-        function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
-        function logout() { localStorage.removeItem('active_user'); location.reload(); }
 
-        function initGame(speedVal) {
-            document.getElementById('mainApp').style.display = 'none';
+        async function syncBalance() {
+            const { data } = await supabase.from('profiles').select('balance').eq('username', activeUser).single();
+            if(data) {
+                const b = parseFloat(data.balance).toFixed(2);
+                document.getElementById('topBal').innerText = "₹" + b;
+                document.getElementById('wallBal').innerText = "₹" + b;
+                return parseFloat(b);
+            }
+        }
+
+        async function startMatchmaking(fee) {
+            const currentBal = await syncBalance();
+            if(currentBal < fee) return alert("Balance kam hai bhai!");
+
+            // Deduct Fee in Cloud
+            await supabase.from('profiles').update({ balance: currentBal - fee }).eq('username', activeUser);
+            
+            document.getElementById('matchOverlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('matchOverlay').style.display = 'none';
+                initGame(fee);
+            }, 4000);
+        }
+
+        function initGame(fee) {
             document.getElementById('gameArena').style.display = 'block';
             const canvas = document.getElementById('mainCanvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth - 60; canvas.height = 420;
-            let p = {y:350, dy:0}, obs = [], score = 0, frame = 0, spd = speedVal;
+            canvas.width = 350; canvas.height = 400;
+
+            let p = {y:350, dy:0}, obs = [], score = 0, botScore = 0, timeLeft = 60;
+
+            const timerInt = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').innerText = `00:${timeLeft < 10 ? '0'+timeLeft : timeLeft}`;
+                if(Math.random() > 0.7) botScore++; // Bot scoring simulation
+
+                if(timeLeft <= 0) {
+                    clearInterval(timerInt);
+                    finishBattle(score, botScore, fee);
+                }
+            }, 1000);
+
             function draw() {
+                if(timeLeft <= 0) return;
                 ctx.clearRect(0,0,canvas.width,canvas.height);
-                if(score > 10) spd += 0.005;
-                p.dy += 0.75; p.y += p.dy; if(p.y > 350) p.y = 350;
-                ctx.fillStyle = '#3b82f6'; ctx.fillRect(60, p.y, 35, 35);
-                if(frame % 90 === 0) obs.push({x:canvas.width, w:30, h:45});
+                p.dy += 0.8; p.y += p.dy; if(p.y > 350) p.y = 350;
+                ctx.fillStyle = '#3b82f6'; ctx.fillRect(50, p.y, 35, 35);
+                
+                if(Math.random() < 0.02) obs.push({x:canvas.width, w:30});
                 obs.forEach((o, i) => {
-                    o.x -= spd; ctx.fillStyle = '#ff4444'; ctx.fillRect(o.x, 350, o.w, o.h);
-                    if(60 < o.x + o.w - 5 && 95 > o.x + 5 && p.y > 310) { alert("Game Over! Score: " + score); location.reload(); }
+                    o.x -= 6; ctx.fillStyle = '#ff4444'; ctx.fillRect(o.x, 350, o.w, 40);
+                    if(50 < o.x + o.w && 85 > o.x && p.y > 310) { score = Math.max(0, score - 1); }
                     if(o.x + o.w < 0) { obs.splice(i, 1); score++; }
                 });
                 document.getElementById('liveScore').innerText = score;
-                frame++; requestAnimationFrame(draw);
+                requestAnimationFrame(draw);
             }
-            window.addEventListener('touchstart', (e) => { e.preventDefault(); if(p.y >= 335) p.dy = -13.5; }, {passive:false});
+            window.addEventListener('touchstart', () => { if(p.y >= 340) p.dy = -14; });
             draw();
+        }
+
+        async function finishBattle(myScore, oppScore, fee) {
+            if(myScore > oppScore) {
+                const winAmt = fee * 1.8;
+                alert(`JEET GAYE! You won ₹${winAmt}`);
+                const { data } = await supabase.from('profiles').select('balance').eq('username', activeUser).single();
+                await supabase.from('profiles').update({ balance: parseFloat(data.balance) + winAmt }).eq('username', activeUser);
+            } else {
+                alert(`HAAR GAYE! Bot score: ${oppScore}. Try Again!`);
+            }
+            location.reload();
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
     </script>
 </body>
