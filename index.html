@@ -31,7 +31,6 @@
         }
         .nav-active { color: #3b82f6 !important; filter: drop-shadow(0 0 10px #3b82f6); }
         
-        /* OVERLAY FIX - NO MORE AUTO SHOW */
         .overlay { display: none; position: fixed; inset: 0; background: rgba(2, 6, 23, 0.98); z-index: 5000; overflow-y: auto; backdrop-filter: blur(10px); }
         
         #gameArena { z-index: 9999 !important; background: #020617; }
@@ -142,7 +141,8 @@
             <div class="flex justify-between items-center mb-6 w-full max-w-md mx-auto">
                 <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="timer" class="text-xl font-black text-white">01:00</span></div>
                 <div class="glass px-6 py-2 rounded-xl border-blue-500/40"><span id="liveScore" class="text-xl font-black text-blue-500">0</span></div>
-                <button onclick="quitGame()" class="bg-red-500/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-red-500/30">QUIT</button>
+                
+                <button onclick="returnToArena()" class="bg-red-500/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-red-500/30">QUIT</button>
             </div>
             <canvas id="mainCanvas"></canvas>
             <p class="text-center mt-8 text-[10px] text-gray-500 uppercase tracking-widest font-black">Tap to Jump</p>
@@ -167,7 +167,7 @@
                     </div>
                 </div>
                 
-                <button onclick="location.reload()" class="w-full bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40 active:scale-95 transition">Back to Arena</button>
+                <button onclick="returnToArena()" class="w-full bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40 active:scale-95 transition">Back to Arena</button>
             </div>
         </div>
     </div>
@@ -290,10 +290,18 @@
             initArena(0, 5); 
         }
 
-        function quitGame() {
+        // --- NEW FIX: BINA REFRESH KIYE WAPAS ARENA JANE KA FUNCTION ---
+        function returnToArena() {
             isPlaying = false;
-            clearInterval(gameTimerInt);
-            location.reload();
+            if(gameTimerInt) clearInterval(gameTimerInt);
+            
+            // Sab overlays hide karo aur main app wapas dikhao
+            document.getElementById('gameArena').style.display = 'none';
+            document.getElementById('resultOverlay').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            
+            // Balance update kar lo
+            updateUI();
         }
 
         function initArena(fee, speedLevel) {
