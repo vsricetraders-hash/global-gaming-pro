@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS PRO | Admin Dashboard</title>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-[#020617] text-white p-4 md:p-8 font-sans">
+    
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-black mb-8 text-blue-500 italic uppercase">Boss Control Room</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-gray-900/50 p-6 rounded-3xl border border-blue-500/30 shadow-lg">
+                <h2 class="text-xl font-bold mb-6 text-blue-400 flex items-center gap-2">
+                    <i class="fa-solid fa-money-bill-trend-up"></i> Pending Deposits
+                </h2>
+                <div id="depositList" class="space-y-4">
+                    <p class="text-gray-500 italic">Waiting for requests...</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-900/50 p-6 rounded-3xl border border-green-500/30 shadow-lg">
+                <h2 class="text-xl font-bold mb-6 text-green-400 flex items-center gap-2">
+                    <i class="fa-solid fa-building-columns"></i> Pending Withdrawals
+                </h2>
+                <div id="withdrawList" class="space-y-4">
+                    <p class="text-gray-500 italic">Waiting for requests...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TERI FIREBASE KEYS
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtJQ79z9JRKsFHO8_1NV1T2PZZcBC-gyc",
+            authDomain: "nexuspro-c74a4.firebaseapp.com",
+            projectId: "nexuspro-c74a4",
+            storageBucket: "nexuspro-c74a4.firebasestorage.app",
+            messagingSenderId: "324638680474",
+            appId: "1:324638680474:web:2ad8bc60a0445d7f49c623"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 1. LISTEN TO DEPOSITS
+        db.collection('deposits').where('status', '==', 'pending').onSnapshot(snapshot => {
+            const list = document.getElementById('depositList'); 
+            if(snapshot.empty) { list.innerHTML = "<p class='text-gray-500 italic'>No pending deposits.</p>"; return; }
+            list.innerHTML = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                list.innerHTML += `
+                    <div class="bg-black/40 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border border-white/5 gap-4">
+                        <div>
+                            <p class="font-black text-white text-lg">${data.userId}</p>
+                            <p class="text-sm text-yellow-400 font-bold tracking-widest mt-1">UTR: ${data.utr}</p>
+                            <p class="text-sm text-gray-400 mt-1">Amount: <span class="text-white font-bold">₹${data.amount}</span></p>
+                        </div>
+                        <button onclick="approveDep('${doc.id}', '${data.userId}', ${data.amount})" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-xs font-black uppercase transition-colors shadow-lg shadow-blue-500/20">
+                            Approve ₹${data.amount}
+                        </button>
+                    </div>
+                `;
+            });
+        });
+
+        // 2. LISTEN TO WITHDRAWALS
+        db.collection('withdrawals').where('status', '==', 'pending').onSnapshot(snapshot => {
+            const list = document.getElementById('withdrawList'); 
+            if(snapshot.empty) { list.innerHTML = "<p class='text-gray-500 italic'>No pending withdrawals.</p>"; return; }
+            list.innerHTML = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                list.innerHTML += `
+                    <div class="bg-black/40 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border border-white/5 gap-4">
+                        <div>
+                            <p class="font-black text-white text-lg">${data.userId}</p>
+                            <p class="text-sm text-green-400 font-bold tracking-widest mt-1">UPI: ${data.upi}</p>
+                            <p class="text-sm text-gray-400 mt-1">Amount to Pay: <span class="text-white font-bold">₹${data.amount}</span></p>
+                        </div>
+                        <button onclick="approveWith('${doc.id}')" class="w-full md:w-auto bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-xs font-black uppercase transition-colors shadow-lg shadow-green-500/20">
+                            Mark Paid
+                        </button>
+                    </div>
+                `;
+            });
+        });
+
+        // ACTION BUTTONS
+        async function approveDep(docId, userId, amt) {
+            const confirmApprove = confirm(`kya sach mein ${userId} ko ₹${amt} dene hain? (Bank me UTR check kar liya?)`);
+            if(!confirmApprove) return;
+            
+            // Increment Bonus Balance
+            await db.collection('users').doc(userId).set({ 
+                bonusBal: firebase.firestore.FieldValue.increment(amt) 
+            }, { merge: true });
+            
+            // Mark request as approved
+            await db.collection('deposits').doc(docId).update({ status: 'approved' });
+            alert(`Boom! ₹${amt} added to ${userId}'s account.`);
+        }
+
+        async function approveWith(docId) {
+            const confirmWith = confirm(`Kya tune sach mein apna bank se isko paise bhej diye hain?`);
+            if(!confirmWith) return;
+            
+            await db.collection('withdrawals').doc(docId).update({ status: 'paid' });
+            alert("Done! Payout complete.");
+        }
+    </script>
+</body>
+</html>
