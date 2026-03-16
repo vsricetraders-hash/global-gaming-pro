@@ -47,10 +47,12 @@
         <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-4 nexus-logo text-center">NexusPro</h1>
         <p class="text-[10px] text-gray-500 font-bold uppercase mb-12 italic tracking-widest text-center">Global Battle Arena</p>
         <div class="space-y-4">
-            <input id="userName" type="text" placeholder="Create Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
-            <input id="mobileNum" type="number" placeholder="Enter Mobile Number" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
+            <input id="userName" type="text" placeholder="Create / Enter Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
+            
+            <input id="userPwd" type="password" placeholder="Create / Enter Password" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
+            
             <input id="refCode" type="text" placeholder="Referral Code (Optional)" class="w-full bg-green-500/5 border border-green-500/30 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-green-500 transition-all text-center text-green-400 placeholder-green-700/50">
-            <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-blue-500/30 active:scale-95 transition mt-2">Enter Empire</button>
+            <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-blue-500/30 active:scale-95 transition mt-2">Login / Sign Up</button>
         </div>
     </div>
 
@@ -323,25 +325,39 @@
             "Kapil", "Lucky_Boy", "Chhotu", "Rajput_Boy", "Devil", "Ninja", "Avinash", "Sumit", "Raj"
         ];
 
-        // --- LOGIN WITH DEVICE LOCK ---
+        // 🚀 SMART LOGIN WITH PASSWORD SECURITY 🚀
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
-            const mobile = document.getElementById('mobileNum').value.trim();
+            const pwd = document.getElementById('userPwd').value.trim();
             const refCode = document.getElementById('refCode').value.trim();
             
             if(!user) return alert("Bhai, Gamer ID daalna zaroori hai!");
-            if(mobile.length < 10) return alert("Sahi 10-digit Mobile Number daalo!");
+            if(!pwd) return alert("Password daalna zaroori hai!");
 
+            const savedPwd = localStorage.getItem(user + '_pwd');
             const existingBal = localStorage.getItem(user + '_bal');
             const deviceUsed = localStorage.getItem('device_bonus_claimed');
 
+            // Agar user purana hai toh password match karo
+            if(savedPwd) {
+                if(savedPwd !== pwd) {
+                    return alert("❌ Wrong Password!\nYa toh password galat hai, ya ye ID kisi aur ne le rakhi hai.");
+                }
+                // Sahi password pe login kar do
+                localStorage.setItem('nexus_active', user);
+                location.reload();
+                return;
+            }
+
+            // Naya user hai toh password save karo aur naya account banao
+            localStorage.setItem(user + '_pwd', pwd);
             localStorage.setItem('nexus_active', user);
             
             if(!existingBal) {
                 if(refCode) {
                     if(deviceUsed === 'true') {
                         localStorage.setItem(user + '_bal', '0.00'); 
-                        alert("⚠️ Ek Phone pe sirf ek baar ₹10 Bonus milta hai! Account created without bonus.");
+                        alert("⚠️ Ek Device pe sirf ek baar ₹10 Bonus milta hai! Account created without bonus.");
                     } else {
                         localStorage.setItem(user + '_bal', '10.00'); 
                         localStorage.setItem('device_bonus_claimed', 'true');
@@ -380,7 +396,6 @@
             document.getElementById('wallBal').innerText = "₹" + bal;
         }
 
-        // --- WITHDRAWAL WITH SECURITY LOCK ---
         function processWithdraw() {
             const upi = document.getElementById('withUpi').value.trim();
             const amtStr = document.getElementById('withAmt').value.trim();
@@ -388,7 +403,6 @@
             const user = localStorage.getItem('nexus_active');
             let currentBal = parseFloat(localStorage.getItem(user + '_bal') || '0.00');
             
-            // 🚀 THE ULTIMATE SCAM-PROOF LOCK 🚀
             const hasDeposited = localStorage.getItem(user + '_has_deposited') === 'true';
             if (!hasDeposited) {
                 return alert("⚠️ SECURITY LOCK: Withdrawal unlock karne ke liye pehle Cash Add (Deposit) karein! Bina deposit ke withdrawal allowed nahi hai.");
@@ -442,7 +456,6 @@
             document.getElementById('generatedCode').innerText = finalCode;
         }
 
-        // --- PROMO CODE UNLOCKS WITHDRAWAL ---
         function redeemCode() {
             const code = document.getElementById('promoCode').value.toUpperCase().trim();
             const user = localStorage.getItem('nexus_active');
@@ -462,7 +475,6 @@
                 usedCodes.push(code); 
                 localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
                 
-                // 🚀 IMPORTANT: REDEEMING PROMO CODE UNLOCKS THE WITHDRAWAL 🚀
                 localStorage.setItem(user + '_has_deposited', 'true');
                 
                 alert(`₹${amt} Successfully Added to Wallet!\n\n✅ Withdrawal is now UNLOCKED!`); 
@@ -783,7 +795,12 @@
         }
         function openOverlay(id) { document.getElementById(id).style.display = 'flex'; }
         function closeOverlay(id) { document.getElementById(id).style.display = 'none'; }
-        function logout() { localStorage.removeItem('nexus_active'); location.reload(); }
+        
+        // 🚀 LOGOUT FUNCTION (Clears session, but keeps balance safe)
+        function logout() { 
+            localStorage.removeItem('nexus_active'); 
+            location.reload(); 
+        }
     </script>
 </body>
 </html>
