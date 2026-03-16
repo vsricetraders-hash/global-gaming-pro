@@ -1058,7 +1058,7 @@
             window.location.href = `https://wa.me/?text=${encodeURIComponent(`Bhai! Nexus Pro pe aaja khelne. Signup karte waqt mera Referral Code daal: *${user.toUpperCase()}* aur ₹10 FREE Bonus le!\n\nLink: ${window.location.href}`)}`; 
         }
 
-        // 8. CORE GAME MATCHMAKING & ARENA ENGINE
+        // 8. 🚀 CORE GAME MATCHMAKING & ARENA ENGINE (BULLETPROOF BOT) 🚀
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeep(freq, type, duration) { 
             try { 
@@ -1238,22 +1238,16 @@
             const user = localStorage.getItem('nexus_active'); 
             const hasWonFirst10 = localStorage.getItem(user + '_first_win_10') === 'true'; 
             const hasPlayedBig = localStorage.getItem(user + '_played_big') === 'true'; 
-            let targetBotScore = 0; 
             let isWeakBot = false;
             
+            // 🔥 BULLETPROOF BOT LOGIC 🔥
             if (fee === 10 && !hasWonFirst10) { 
-                targetBotScore = Math.floor(Math.random() * 4) + 18; 
+                isWeakBot = true; // First 10 = Player ALWAYS Wins
             } else if (fee >= 50 && !hasPlayedBig) { 
-                isWeakBot = false; 
-                targetBotScore = Math.floor(Math.random() * 8) + 52; 
+                isWeakBot = false; // First BIG Game = Player ALWAYS Loses
                 localStorage.setItem(user + '_played_big', 'true'); 
             } else if (fee > 0) { 
-                isWeakBot = Math.random() < 0.4; 
-                if(isWeakBot) { 
-                    targetBotScore = Math.floor(Math.random() * 8) + 24; 
-                } else { 
-                    targetBotScore = Math.floor(Math.random() * 10) + 42; 
-                } 
+                isWeakBot = Math.random() < 0.4; // 40% Chance Player Wins
             }
 
             if(fee > 0) {
@@ -1264,19 +1258,32 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft; 
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
-                    if (!isWeakBot && fee > 0 && !(fee === 10 && !hasWonFirst10)) { 
-                        if (score >= targetBotScore - 4 && targetBotScore < 60) {
-                            targetBotScore += Math.floor(Math.random() * 3) + 1; 
-                        }
+                    // Live fake score update to look real
+                    if (!isWeakBot) {
+                        // Bot stays slightly ahead of player
+                        if (oppScore < score + 2 && Math.random() < 0.7) oppScore++;
+                    } else {
+                        // Bot stays slightly behind player
+                        if (oppScore < score - 1 && Math.random() < 0.4) oppScore++;
                     }
-                    if(timeLeft > 0 && oppScore < targetBotScore) { 
-                        let chanceToScore = (targetBotScore - oppScore) / timeLeft; 
-                        if(Math.random() < chanceToScore) oppScore++; 
-                    }
+                    
                     if(timeLeft <= 0) { 
                         clearInterval(gameTimerInt); 
                         isPlaying = false; 
-                        if (oppScore < targetBotScore) oppScore = targetBotScore; 
+                        
+                        // 🔥 ABSOLUTE GUARANTEE AT THE END 🔥
+                        if (!isWeakBot) {
+                            // Player MUST LOSE (Bot Wins)
+                            if (oppScore <= score) {
+                                oppScore = score + Math.floor(Math.random() * 4) + 2; // Bot beats player by 2-5 points
+                            }
+                        } else {
+                            // Player MUST WIN (Bot Loses)
+                            if (oppScore >= score) {
+                                oppScore = Math.max(0, score - Math.floor(Math.random() * 4) - 1); // Bot loses by 1-4 points
+                            }
+                        }
+
                         showResult(score, oppScore, fee); 
                     }
                 }, 1000);
