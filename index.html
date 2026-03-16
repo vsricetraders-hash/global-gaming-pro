@@ -172,7 +172,6 @@
 
     <div id="matchmakingOverlay" class="fixed inset-0 z-[20000] bg-[#020617]/95 backdrop-blur-sm flex flex-col items-center justify-center p-6" style="display: none;">
         <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] flex flex-col items-center justify-center">
-            
             <div id="searchRadar" class="relative w-28 h-28 mx-auto mb-8 flex items-center justify-center">
                 <div class="absolute inset-0 border-2 border-blue-500/30 rounded-full animate-ping-slow"></div>
                 <div class="absolute inset-2 border-2 border-blue-400/50 rounded-full animate-pulse"></div>
@@ -696,18 +695,19 @@
             let targetBotScore = 0;
             let isWeakBot = false;
             
+            // 🚀 REALISTIC BOT TARGET SCORES 🚀
             if (fee === 10 && !hasWonFirst10) {
-                targetBotScore = 21; 
+                targetBotScore = Math.floor(Math.random() * 4) + 18; // 18-21 (Easy win for user)
             } else if (fee >= 50 && !hasPlayedBig) {
                 isWeakBot = false;
-                targetBotScore = Math.floor(Math.random() * 6) + 42; 
+                targetBotScore = Math.floor(Math.random() * 8) + 52; // 52-59 (Maha-Lock: Hard to beat)
                 localStorage.setItem(user + '_played_big', 'true'); 
             } else if (fee > 0) {
                 isWeakBot = Math.random() < 0.4; 
                 if(isWeakBot) {
-                    targetBotScore = Math.floor(Math.random() * 3) + 27; 
+                    targetBotScore = Math.floor(Math.random() * 8) + 24; // 24-31 (Weak Bot)
                 } else {
-                    targetBotScore = Math.floor(Math.random() * 6) + 42; 
+                    targetBotScore = Math.floor(Math.random() * 10) + 42; // 42-51 (Strong Bot)
                 }
             }
 
@@ -719,9 +719,10 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
+                    // Subtle Rubber-banding (Capped at 60 max)
                     if (!isWeakBot && fee > 0 && !(fee === 10 && !hasWonFirst10)) {
-                        if (score >= targetBotScore - 3) {
-                            targetBotScore = score + Math.floor(Math.random() * 2) + 1; 
+                        if (score >= targetBotScore - 4 && targetBotScore < 60) {
+                            targetBotScore += Math.floor(Math.random() * 3) + 1; 
                         }
                     }
 
@@ -749,13 +750,8 @@
                 if(!isPlaying) return; 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
-                // 🚀 SMOOTH DEATH CURVE (No Jhatkas)
-                let extraSpeed = 0;
-                if(score > 15) extraSpeed += (score - 15) * 0.08; 
-                if(score > 25) extraSpeed += (score - 25) * 0.15;
-                if(score > 35) extraSpeed += (score - 35) * 0.25; 
-                
-                currentSpeed = speedLevel + extraSpeed;
+                // 🚀 EXTREMELY SMOOTH & NATURAL DIFFICULTY 🚀
+                currentSpeed = speedLevel + (score * 0.06); 
 
                 p.dy += 0.8; 
                 p.y += p.dy; 
@@ -764,14 +760,13 @@
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
-                // Gap gradually kam hoga bina pata chale
-                let dynamicGap = Math.max(120, 230 - (score * 2.5)); 
+                // Mathematically safe gap (User ko cheat jaisa feel nahi hoga)
+                let minSafeGap = currentSpeed * 35; 
+                let dynamicGap = Math.max(minSafeGap, 260 - (score * 2)); 
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
                 
                 if(lastDist > dynamicGap) { 
-                    // High score pe thoda unpredictable spawn
-                    let randomSpawnChance = score > 30 ? 0.04 : 0.02;
-                    if(lastDist > (dynamicGap + 120) || Math.random() < randomSpawnChance) { 
+                    if(lastDist > (dynamicGap + 120) || Math.random() < 0.03) { 
                         obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
                     }
                 }
