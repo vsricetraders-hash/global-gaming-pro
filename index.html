@@ -314,7 +314,6 @@
         let matchSearchInt = null;
         let matchTimeout = null;
 
-        // NATURAL INDIAN NAMES ARRAY
         const naturalNames = [
             "Rahul", "Aman", "Priya", "Vikash", "Rohit", "Sneha", "Karan", "Ritik", "Neha", "Shivam", 
             "Ajay", "Deepak", "Ravi", "Sandeep", "Nisha", "Raju", "Amit", "Pooja", "Gaurav", "Sunil", 
@@ -324,7 +323,7 @@
             "Kapil", "Lucky_Boy", "Chhotu", "Rajput_Boy", "Devil", "Ninja", "Avinash", "Sumit", "Raj"
         ];
 
-        // --- DEVICE LOCK & MOBILE VERIFICATION LOGIC ---
+        // --- LOGIN WITH DEVICE LOCK ---
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
             const mobile = document.getElementById('mobileNum').value.trim();
@@ -341,11 +340,9 @@
             if(!existingBal) {
                 if(refCode) {
                     if(deviceUsed === 'true') {
-                        // Agar phone pehle use ho chuka hai, toh bonus 0
                         localStorage.setItem(user + '_bal', '0.00'); 
                         alert("⚠️ Ek Phone pe sirf ek baar ₹10 Bonus milta hai! Account created without bonus.");
                     } else {
-                        // Naya phone hai, toh ₹10 de do aur device lock kar do
                         localStorage.setItem(user + '_bal', '10.00'); 
                         localStorage.setItem('device_bonus_claimed', 'true');
                         alert("🎉 Referral Code Applied! ₹10 Free Bonus Added.");
@@ -383,28 +380,41 @@
             document.getElementById('wallBal').innerText = "₹" + bal;
         }
 
+        // --- WITHDRAWAL WITH SECURITY LOCK ---
         function processWithdraw() {
             const upi = document.getElementById('withUpi').value.trim();
             const amtStr = document.getElementById('withAmt').value.trim();
             const amt = parseInt(amtStr); 
             const user = localStorage.getItem('nexus_active');
             let currentBal = parseFloat(localStorage.getItem(user + '_bal') || '0.00');
+            
+            // 🚀 THE ULTIMATE SCAM-PROOF LOCK 🚀
+            const hasDeposited = localStorage.getItem(user + '_has_deposited') === 'true';
+            if (!hasDeposited) {
+                return alert("⚠️ SECURITY LOCK: Withdrawal unlock karne ke liye pehle Cash Add (Deposit) karein! Bina deposit ke withdrawal allowed nahi hai.");
+            }
+
             if (!upi) return alert("Bhai, apna UPI ID toh daal!");
             if (isNaN(amt) || amt < 50) return alert("Minimum withdrawal ₹50 hai mere bhai!");
             if (amt > currentBal) return alert("Tere wallet mein itne paise nahi hain!");
+            
             currentBal -= amt;
             localStorage.setItem(user + '_bal', currentBal.toFixed(2));
             updateUI();
+            
             const rand = Math.floor(1000 + Math.random() * 9000);
             const secretHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
             const wdCode = `WD-${amt}-${rand}-${secretHash}`;
+            
             closeOverlay('withdrawOverlay');
             document.getElementById('withUpi').value = '';
             document.getElementById('withAmt').value = '';
+            
             const adminPhone = "917309433678"; 
             const msg = `🚨 *NEW PAYOUT REQUEST* 🚨%0A%0A👤 *Gamer ID:* ${user}%0A💳 *UPI ID:* ${upi}%0A💰 *Amount:* ₹${amt}%0A🔐 *Secure Code:* ${wdCode}%0A%0A_Admin, please verify this code in your panel before paying._`;
             window.location.href = `https://wa.me/${adminPhone}?text=${msg}`;
         }
+
         function verifyWithdrawal() {
             const code = document.getElementById('verifyWdCode').value.toUpperCase().trim();
             if(!code) return alert("Code daalo bhai!");
@@ -421,6 +431,7 @@
                 document.getElementById('verifyWdCode').value = '';
             } else { alert("❌ FAKE CODE! Payment mat karna!"); }
         }
+
         function generatePromo() {
             const amtStr = document.getElementById('genAmt').value;
             if(!amtStr || amtStr <= 0) return alert("Enter valid amount!");
@@ -430,23 +441,38 @@
             const finalCode = `NX${amt}-${rand}-${secretHash}`;
             document.getElementById('generatedCode').innerText = finalCode;
         }
+
+        // --- PROMO CODE UNLOCKS WITHDRAWAL ---
         function redeemCode() {
             const code = document.getElementById('promoCode').value.toUpperCase().trim();
             const user = localStorage.getItem('nexus_active');
             const current = parseFloat(localStorage.getItem(user + '_bal'));
             let usedCodes = JSON.parse(localStorage.getItem(user + '_used_codes') || '[]');
+            
             if(usedCodes.includes(code)) return alert("Chalaki mat kar bhai! Ye code pehle hi use ho chuka hai.");
             const parts = code.split('-');
             if(parts.length !== 3 || !parts[0].startsWith('NX')) return alert("Invalid or Fake Code!");
+            
             const amt = parseInt(parts[0].replace('NX', '')); const rand = parseInt(parts[1]); const providedHash = parseInt(parts[2]);
             if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return alert("Invalid Code!");
             const expectedHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
+            
             if(providedHash === expectedHash) {
                 localStorage.setItem(user + '_bal', (current + amt).toFixed(2));
-                usedCodes.push(code); localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
-                alert(`₹${amt} Successfully Added to Wallet!`); updateUI(); document.getElementById('promoCode').value = '';
-            } else { alert("Fake Code Detected! System Alert Triggered."); }
+                usedCodes.push(code); 
+                localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
+                
+                // 🚀 IMPORTANT: REDEEMING PROMO CODE UNLOCKS THE WITHDRAWAL 🚀
+                localStorage.setItem(user + '_has_deposited', 'true');
+                
+                alert(`₹${amt} Successfully Added to Wallet!\n\n✅ Withdrawal is now UNLOCKED!`); 
+                updateUI(); 
+                document.getElementById('promoCode').value = '';
+            } else { 
+                alert("Fake Code Detected! System Alert Triggered."); 
+            }
         }
+
         function handleAdminClick() {
             adminClicks++; 
             if(adminClicks >= 5) { 
