@@ -313,6 +313,16 @@
         let matchSearchInt = null;
         let matchTimeout = null;
 
+        // NATURAL INDIAN NAMES ARRAY
+        const naturalNames = [
+            "Rahul", "Aman", "Priya", "Vikash", "Rohit", "Sneha", "Karan", "Ritik", "Neha", "Shivam", 
+            "Ajay", "Deepak", "Ravi", "Sandeep", "Nisha", "Raju", "Amit", "Pooja", "Gaurav", "Sunil", 
+            "Manish", "Ankit", "Saurabh", "Vishal", "Akash", "Pankaj", "Vikas", "Rahul_Pro", "Aman_007", 
+            "King_Kohli", "Mahi_Fan", "Rocky", "Abhishek", "Harsh", "Sachin", "Dinesh", "Suresh", "Ramesh", 
+            "Komal", "Jyoti", "Prince", "Aryan", "Yash", "Tushar", "Suraj", "Nitin", "Tarun", "Mohit", 
+            "Kapil", "Lucky_Boy", "Chhotu", "Rajput_Boy", "Devil", "Ninja", "Avinash", "Sumit", "Raj"
+        ];
+
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
             const refCode = document.getElementById('refCode').value.trim();
@@ -478,7 +488,13 @@
                 playBeep(800, 'sine', 0.2); 
                 document.getElementById('searchRadar').style.display = 'none';
                 document.getElementById('oppFoundInfo').style.display = 'block';
-                document.getElementById('fakeOpponentId').innerText = "Gamer" + Math.floor(1000 + Math.random() * 8000);
+                
+                // GENERATE NATURAL INDIAN NAME
+                const randomName = naturalNames[Math.floor(Math.random() * naturalNames.length)];
+                const randomNum = Math.floor(Math.random() * 999);
+                const finalOpponentName = (Math.random() > 0.4) ? randomName + randomNum : randomName; // 60% chance to add a number
+                document.getElementById('fakeOpponentId').innerText = finalOpponentName;
+                
                 document.getElementById('matchmakingTitle').innerText = "Match Found!";
                 document.getElementById('matchmakingTitle').className = "text-2xl font-black italic text-green-400 mb-2 uppercase tracking-widest";
                 document.getElementById('matchmakingSub').innerText = "Preparing Arena...";
@@ -525,11 +541,14 @@
             }, 1000);
         }
 
+        // --- PRACTICE MODE FIX (NO MATCHMAKING) ---
         function startPractice() { 
             if(isPlaying) return;
             if(!navigator.onLine) { document.getElementById('offlineOverlay').style.display = 'flex'; return; }
             if(audioCtx.state === 'suspended') audioCtx.resume();
-            startMatchmaking(0, 5); 
+            
+            // Practice starts instantly, no fake player scanning
+            initArena(0, 5); 
         }
 
         function returnToArena() {
@@ -545,7 +564,7 @@
             updateUI();
         }
 
-        // --- GAME ARENA LOGIC (WITH DEATH ZONE SCORE FIX) ---
+        // --- GAME ARENA LOGIC ---
         function initArena(fee, speedLevel) {
             isPlaying = true;
             document.getElementById('mainApp').style.display = 'none';
@@ -624,10 +643,9 @@
                 if(!isPlaying) return; 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
-                // 🚀 DEATH ZONE LOGIC: Score badhne par game hard hoga
                 if(score > 10) currentSpeed = speedLevel + 2;
-                if(score > 30) currentSpeed = speedLevel + 3; // Thoda fast
-                if(score > 45) currentSpeed = speedLevel + 5; // Death zone (Bahut fast)
+                if(score > 30) currentSpeed = speedLevel + 3; 
+                if(score > 45) currentSpeed = speedLevel + 5; 
 
                 p.dy += 0.8; 
                 p.y += p.dy; 
@@ -636,7 +654,6 @@
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
-                // Obstacles ke beech ka gap score ke sath kam hoga
                 let dynamicGap = Math.max(140, 220 - (score * 1.5)); 
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
                 
