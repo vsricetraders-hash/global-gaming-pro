@@ -154,6 +154,25 @@
         </footer>
     </div>
 
+    <div id="matchmakingOverlay" class="overlay z-[20000]" style="display: none;">
+        <div class="flex flex-col items-center justify-center min-h-full p-6">
+            <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-t-4 border-blue-500 bg-gradient-to-b from-[#020617] to-blue-900/20">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto mb-6"></div>
+                <h2 class="text-2xl font-black italic text-white mb-2 uppercase tracking-wide">Searching...</h2>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Please wait for other player</p>
+                <div class="bg-black/50 rounded-full px-6 py-3 inline-block">
+                    <p id="searchTimer" class="text-3xl font-black text-blue-500 italic">10s</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="offlineOverlay" class="fixed inset-0 z-[30000] bg-red-900/95 flex flex-col items-center justify-center p-6" style="display: none; backdrop-filter: blur(10px);">
+        <i class="fa-solid fa-wifi-slash text-6xl text-white mb-6 animate-pulse"></i>
+        <h2 class="text-4xl font-black italic text-white mb-2 uppercase text-center tracking-tighter">NO INTERNET</h2>
+        <p class="text-xs font-bold text-white/80 uppercase tracking-widest text-center mt-2 max-w-xs leading-relaxed">Please turn on your Wi-Fi or Mobile Data to continue playing securely!</p>
+    </div>
+
     <div id="gameArena" class="overlay" style="display: none;">
         <div class="flex flex-col min-h-full px-4 pt-10">
             <div class="flex justify-between items-center mb-6 w-full max-w-md mx-auto relative z-[99999]">
@@ -191,9 +210,7 @@
         <div class="flex flex-col min-h-full p-6 justify-center">
             <div class="flex justify-between items-center mb-10 w-full max-w-sm mx-auto"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Deposit</h2><button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="glass p-8 rounded-[3rem] text-center border-dashed border-blue-500/50 mb-6 w-full max-w-sm mx-auto">
-                
                 <img src="" alt="QR Code" class="w-48 h-48 mx-auto mb-4 rounded-lg shadow-lg hidden" id="qrImg">
-                
                 <p class="text-[10px] text-gray-500 font-black uppercase mb-4">Pay to UPI</p>
                 <p class="text-xl font-black italic text-white mb-6">Nexuspro@ptaxis</p>
                 <button onclick="navigator.clipboard.writeText('Nexuspro@ptaxis'); alert('UPI Copied!')" class="bg-blue-600 px-10 py-4 rounded-full text-[10px] font-black uppercase shadow-lg">Copy UPI ID</button>
@@ -245,9 +262,19 @@
     </div>
 
     <script>
+        // --- OFFLINE/ONLINE DETECTION ---
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineOverlay').style.display = 'flex';
+        });
+        window.addEventListener('online', () => {
+            document.getElementById('offlineOverlay').style.display = 'none';
+        });
+
         let adminClicks = 0;
         let isPlaying = false;
         let gameTimerInt = null;
+        let matchSearchInt = null;
+        let matchTimeout = null;
 
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
@@ -415,6 +442,13 @@
 
         function startMatch(fee, speedLevel) {
             if(isPlaying) return; 
+            
+            // Check Internet before starting
+            if(!navigator.onLine) {
+                document.getElementById('offlineOverlay').style.display = 'flex';
+                return;
+            }
+
             const user = localStorage.getItem('nexus_active');
             const bal = parseFloat(localStorage.getItem(user + '_bal'));
             
@@ -422,7 +456,31 @@
             
             localStorage.setItem(user + '_bal', (bal - fee).toFixed(2));
             updateUI();
-            initArena(fee, speedLevel);
+            
+            // Start the Real-time Matchmaking UI
+            startMatchmaking(fee, speedLevel);
+        }
+
+        function startMatchmaking(fee, speedLevel) {
+            document.getElementById('matchmakingOverlay').style.display = 'flex';
+            let timeLeft = 10;
+            document.getElementById('searchTimer').innerText = timeLeft + "s";
+            
+            // Randomly pick a time between 2 to 7 seconds for the match to "connect"
+            const randomWaitTime = Math.floor(Math.random() * 5000) + 2000; 
+
+            matchSearchInt = setInterval(() => {
+                timeLeft--;
+                if(timeLeft >= 0) {
+                    document.getElementById('searchTimer').innerText = timeLeft + "s";
+                }
+            }, 1000);
+
+            matchTimeout = setTimeout(() => {
+                clearInterval(matchSearchInt);
+                document.getElementById('matchmakingOverlay').style.display = 'none';
+                initArena(fee, speedLevel);
+            }, randomWaitTime);
         }
 
         function startPractice() { 
@@ -433,6 +491,9 @@
         function returnToArena() {
             isPlaying = false;
             if(gameTimerInt) clearInterval(gameTimerInt);
+            if(matchSearchInt) clearInterval(matchSearchInt);
+            if(matchTimeout) clearTimeout(matchTimeout);
+            document.getElementById('matchmakingOverlay').style.display = 'none';
             document.getElementById('gameArena').style.display = 'none';
             document.getElementById('resultOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
@@ -459,7 +520,7 @@
 
             const user = localStorage.getItem('nexus_active');
             const hasWonFirst10 = localStorage.getItem(user + '_first_win_10') === 'true';
-            const hasPlayedBig = localStorage.getItem(user + '_played_big') === 'true'; // Maha-Lock track karega
+            const hasPlayedBig = localStorage.getItem(user + '_played_big') === 'true'; 
             
             let targetBotScore = 0;
             let isWeakBot = false;
@@ -467,17 +528,15 @@
             if (fee === 10 && !hasWonFirst10) {
                 targetBotScore = 21; 
             } else if (fee >= 50 && !hasPlayedBig) {
-                // 🚀 MAHA-LOCK: Pehla 50 ya 100 wala match user 100% HAAREGA
                 isWeakBot = false;
-                targetBotScore = Math.floor(Math.random() * 6) + 42; // Bot banega Terminator (42 se 47 score banayega)
-                localStorage.setItem(user + '_played_big', 'true'); // Lock lag gaya ki bada khel liya
+                targetBotScore = Math.floor(Math.random() * 6) + 42; 
+                localStorage.setItem(user + '_played_big', 'true'); 
             } else if (fee > 0) {
-                // Normal matches (40% win rule)
                 isWeakBot = Math.random() < 0.4; 
                 if(isWeakBot) {
-                    targetBotScore = Math.floor(Math.random() * 3) + 27; // Weak Bot
+                    targetBotScore = Math.floor(Math.random() * 3) + 27; 
                 } else {
-                    targetBotScore = Math.floor(Math.random() * 6) + 42; // Strong Bot ab aur bhi high score banayega (42-47)
+                    targetBotScore = Math.floor(Math.random() * 6) + 42; 
                 }
             }
 
@@ -489,7 +548,6 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
-                    // Bot cheat protection: Agar player bot ke score ke paas aane lage, toh bot aur aage bhaag jayega
                     if (!isWeakBot && fee > 0 && !(fee === 10 && !hasWonFirst10)) {
                         if (score >= targetBotScore - 3) {
                             targetBotScore = score + Math.floor(Math.random() * 2) + 1; 
@@ -520,7 +578,6 @@
                 if(!isPlaying) return; 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
-                // Sab matches ke liye speed same rakhi hai
                 if(score > 10) currentSpeed = speedLevel + 2;
                 if(score > 20) currentSpeed = speedLevel + 2;
                 if(score > 35) currentSpeed = speedLevel + 2;
