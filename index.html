@@ -36,7 +36,6 @@
         canvas { background: #020617; border-radius: 35px; border: 2px solid #3b82f6; width: 100%; max-width: 400px; display: block; margin: 0 auto; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
         .nexus-logo { font-family: 'Syncopate', sans-serif; letter-spacing: -2px; }
         
-        /* New Animations */
         @keyframes ping-slow { 75%, 100% { transform: scale(1.5); opacity: 0; } }
         .animate-ping-slow { animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
         .pulse-text { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
@@ -159,37 +158,34 @@
         </footer>
     </div>
 
-    <div id="matchmakingOverlay" class="overlay z-[20000]" style="display: none;">
-        <div class="flex flex-col items-center justify-center min-h-full p-6">
-            <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-2 border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.2)] bg-gradient-to-b from-[#020617] to-[#0f172a]">
-                
-                <div id="searchRadar" class="relative w-24 h-24 mx-auto mb-8">
-                    <div class="absolute inset-0 bg-blue-500/20 rounded-full animate-ping-slow"></div>
-                    <div class="absolute inset-2 bg-blue-500/40 rounded-full animate-pulse"></div>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <i class="fa-solid fa-crosshairs text-3xl text-blue-400"></i>
-                    </div>
-                </div>
+    <div id="matchmakingOverlay" class="fixed inset-0 z-[20000] bg-[#020617]/95 backdrop-blur-sm flex flex-col items-center justify-center p-6" style="display: none;">
+        <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] flex flex-col items-center justify-center">
+            
+            <div id="searchRadar" class="relative w-28 h-28 mx-auto mb-8 flex items-center justify-center">
+                <div class="absolute inset-0 border-2 border-blue-500/30 rounded-full animate-ping-slow"></div>
+                <div class="absolute inset-2 border-2 border-blue-400/50 rounded-full animate-pulse"></div>
+                <div class="absolute inset-4 bg-blue-500/10 rounded-full"></div>
+                <i class="fa-solid fa-crosshairs text-4xl text-blue-400"></i>
+            </div>
 
-                <div id="oppFoundInfo" class="hidden mb-8">
-                    <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg shadow-red-500/50">
-                        <i class="fa-solid fa-user-ninja text-3xl text-white"></i>
-                    </div>
-                    <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Opponent</p>
-                    <h3 id="fakeOpponentId" class="text-xl font-black italic text-red-400">GamerXXXX</h3>
+            <div id="oppFoundInfo" class="hidden mb-8 w-full">
+                <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg shadow-red-500/50 border-2 border-white/20">
+                    <i class="fa-solid fa-user-ninja text-3xl text-white"></i>
                 </div>
+                <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Opponent</p>
+                <h3 id="fakeOpponentId" class="text-2xl font-black italic text-red-400">GamerXXXX</h3>
+            </div>
 
-                <h2 id="matchmakingTitle" class="text-2xl font-black italic text-white mb-2 uppercase tracking-widest pulse-text">Scanning...</h2>
-                <p id="matchmakingSub" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Locating active players</p>
-                
-                <div id="matchTimerContainer" class="bg-blue-900/30 border border-blue-500/30 rounded-2xl px-6 py-3 inline-block">
-                    <p id="searchTimer" class="text-2xl font-black text-blue-400 italic">10s</p>
-                </div>
+            <h2 id="matchmakingTitle" class="text-2xl font-black italic text-white mb-2 uppercase tracking-widest pulse-text">Scanning...</h2>
+            <p id="matchmakingSub" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Locating active players</p>
+            
+            <div id="matchTimerContainer" class="bg-[#0f172a] border border-blue-500/20 rounded-2xl px-8 py-3 inline-block shadow-inner">
+                <p id="searchTimer" class="text-2xl font-black text-blue-400 italic">10s</p>
             </div>
         </div>
     </div>
 
-    <div id="countdownOverlay" class="fixed inset-0 z-[25000] bg-[#020617] flex flex-col items-center justify-center" style="display: none;">
+    <div id="countdownOverlay" class="fixed inset-0 z-[25000] bg-[#020617]/95 backdrop-blur-md flex flex-col items-center justify-center" style="display: none;">
         <h1 id="countdownText" class="text-[150px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-800 drop-shadow-[0_0_30px_rgba(59,130,246,0.8)] leading-none transition-transform duration-200">3</h1>
         <p class="text-xs text-blue-400 font-bold uppercase tracking-[0.5em] mt-8 animate-pulse">Get Ready</p>
     </div>
@@ -293,7 +289,7 @@
         window.addEventListener('offline', () => { document.getElementById('offlineOverlay').style.display = 'flex'; });
         window.addEventListener('online', () => { document.getElementById('offlineOverlay').style.display = 'none'; });
 
-        // --- WEB AUDIO API FOR BEEP SOUNDS (No external files needed) ---
+        // --- WEB AUDIO API FOR BEEP SOUNDS ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeep(freq, type, duration) {
             try {
@@ -360,7 +356,6 @@
             document.getElementById('wallBal').innerText = "₹" + bal;
         }
 
-        // [All admin & wallet functions remain completely unchanged]
         function processWithdraw() {
             const upi = document.getElementById('withUpi').value.trim();
             const amtStr = document.getElementById('withAmt').value.trim();
@@ -442,10 +437,7 @@
 
         function startMatch(fee, speedLevel) {
             if(isPlaying) return; 
-            
-            // Resume audio context on first user click
             if(audioCtx.state === 'suspended') audioCtx.resume();
-            
             if(!navigator.onLine) { document.getElementById('offlineOverlay').style.display = 'flex'; return; }
 
             const user = localStorage.getItem('nexus_active');
@@ -459,13 +451,11 @@
             startMatchmaking(fee, speedLevel);
         }
 
-        // --- NEW MATCHMAKING & COUNTDOWN SYSTEM ---
         function startMatchmaking(fee, speedLevel) {
             const overlay = document.getElementById('matchmakingOverlay');
             overlay.style.display = 'flex';
             
-            // Reset UI states
-            document.getElementById('searchRadar').style.display = 'block';
+            document.getElementById('searchRadar').style.display = 'flex';
             document.getElementById('oppFoundInfo').style.display = 'none';
             document.getElementById('matchmakingTitle').innerText = "Scanning...";
             document.getElementById('matchmakingTitle').className = "text-2xl font-black italic text-white mb-2 uppercase tracking-widest pulse-text";
@@ -485,8 +475,7 @@
             matchTimeout = setTimeout(() => {
                 clearInterval(matchSearchInt);
                 
-                // Show Opponent Found
-                playBeep(800, 'sine', 0.2); // Success sound
+                playBeep(800, 'sine', 0.2); 
                 document.getElementById('searchRadar').style.display = 'none';
                 document.getElementById('oppFoundInfo').style.display = 'block';
                 document.getElementById('fakeOpponentId').innerText = "Gamer" + Math.floor(1000 + Math.random() * 8000);
@@ -495,7 +484,6 @@
                 document.getElementById('matchmakingSub').innerText = "Preparing Arena...";
                 document.getElementById('matchTimerContainer').style.display = 'none';
 
-                // Wait 1.5s then start countdown
                 setTimeout(() => {
                     overlay.style.display = 'none';
                     startCountdown(fee, speedLevel);
@@ -518,7 +506,6 @@
                 count--;
                 if(count > 0) {
                     countText.innerText = count;
-                    // Pop animation
                     countText.style.transform = "scale(1.3)";
                     setTimeout(() => countText.style.transform = "scale(1)", 150);
                     playBeep(600, 'square', 0.1);
@@ -527,11 +514,10 @@
                     countText.innerText = "GO!";
                     countText.style.transform = "scale(1.5)";
                     countText.className = "text-[120px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-600 drop-shadow-[0_0_40px_rgba(74,222,128,0.8)] leading-none transition-transform duration-100";
-                    playBeep(1000, 'square', 0.4); // High beep for GO
+                    playBeep(1000, 'square', 0.4); 
                     
                     setTimeout(() => {
                         countdownOverlay.style.display = 'none';
-                        // Reset class for next time
                         countText.className = "text-[150px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-800 drop-shadow-[0_0_30px_rgba(59,130,246,0.8)] leading-none transition-transform duration-200";
                         initArena(fee, speedLevel);
                     }, 600);
@@ -543,7 +529,7 @@
             if(isPlaying) return;
             if(!navigator.onLine) { document.getElementById('offlineOverlay').style.display = 'flex'; return; }
             if(audioCtx.state === 'suspended') audioCtx.resume();
-            startMatchmaking(0, 5); // Goes through the same cool flow for practice!
+            startMatchmaking(0, 5); 
         }
 
         function returnToArena() {
@@ -559,7 +545,7 @@
             updateUI();
         }
 
-        // --- GAME ARENA LOGIC ---
+        // --- GAME ARENA LOGIC (WITH DEATH ZONE SCORE FIX) ---
         function initArena(fee, speedLevel) {
             isPlaying = true;
             document.getElementById('mainApp').style.display = 'none';
@@ -638,9 +624,10 @@
                 if(!isPlaying) return; 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
+                // 🚀 DEATH ZONE LOGIC: Score badhne par game hard hoga
                 if(score > 10) currentSpeed = speedLevel + 2;
-                if(score > 20) currentSpeed = speedLevel + 2;
-                if(score > 35) currentSpeed = speedLevel + 2;
+                if(score > 30) currentSpeed = speedLevel + 3; // Thoda fast
+                if(score > 45) currentSpeed = speedLevel + 5; // Death zone (Bahut fast)
 
                 p.dy += 0.8; 
                 p.y += p.dy; 
@@ -649,9 +636,12 @@
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
+                // Obstacles ke beech ka gap score ke sath kam hoga
+                let dynamicGap = Math.max(140, 220 - (score * 1.5)); 
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
-                if(lastDist > 220) { 
-                    if(lastDist > 380 || Math.random() < 0.02) { 
+                
+                if(lastDist > dynamicGap) { 
+                    if(lastDist > (dynamicGap + 100) || Math.random() < 0.02) { 
                         obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
                     }
                 }
@@ -670,7 +660,7 @@
                         obs.splice(i, 1); 
                         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        playBeep(200, 'sawtooth', 0.1); // Small collision sound
+                        playBeep(200, 'sawtooth', 0.1); 
                         continue; 
                     }
                     
