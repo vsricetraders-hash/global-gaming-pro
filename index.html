@@ -35,6 +35,11 @@
         #gameArena { z-index: 9999 !important; }
         canvas { background: #020617; border-radius: 35px; border: 2px solid #3b82f6; width: 100%; max-width: 400px; display: block; margin: 0 auto; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
         .nexus-logo { font-family: 'Syncopate', sans-serif; letter-spacing: -2px; }
+        
+        /* New Animations */
+        @keyframes ping-slow { 75%, 100% { transform: scale(1.5); opacity: 0; } }
+        .animate-ping-slow { animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        .pulse-text { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
 <body>
@@ -156,15 +161,37 @@
 
     <div id="matchmakingOverlay" class="overlay z-[20000]" style="display: none;">
         <div class="flex flex-col items-center justify-center min-h-full p-6">
-            <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-t-4 border-blue-500 bg-gradient-to-b from-[#020617] to-blue-900/20">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto mb-6"></div>
-                <h2 class="text-2xl font-black italic text-white mb-2 uppercase tracking-wide">Searching...</h2>
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6">Please wait for other player</p>
-                <div class="bg-black/50 rounded-full px-6 py-3 inline-block">
-                    <p id="searchTimer" class="text-3xl font-black text-blue-500 italic">10s</p>
+            <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-2 border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.2)] bg-gradient-to-b from-[#020617] to-[#0f172a]">
+                
+                <div id="searchRadar" class="relative w-24 h-24 mx-auto mb-8">
+                    <div class="absolute inset-0 bg-blue-500/20 rounded-full animate-ping-slow"></div>
+                    <div class="absolute inset-2 bg-blue-500/40 rounded-full animate-pulse"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <i class="fa-solid fa-crosshairs text-3xl text-blue-400"></i>
+                    </div>
+                </div>
+
+                <div id="oppFoundInfo" class="hidden mb-8">
+                    <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg shadow-red-500/50">
+                        <i class="fa-solid fa-user-ninja text-3xl text-white"></i>
+                    </div>
+                    <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Opponent</p>
+                    <h3 id="fakeOpponentId" class="text-xl font-black italic text-red-400">GamerXXXX</h3>
+                </div>
+
+                <h2 id="matchmakingTitle" class="text-2xl font-black italic text-white mb-2 uppercase tracking-widest pulse-text">Scanning...</h2>
+                <p id="matchmakingSub" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Locating active players</p>
+                
+                <div id="matchTimerContainer" class="bg-blue-900/30 border border-blue-500/30 rounded-2xl px-6 py-3 inline-block">
+                    <p id="searchTimer" class="text-2xl font-black text-blue-400 italic">10s</p>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="countdownOverlay" class="fixed inset-0 z-[25000] bg-[#020617] flex flex-col items-center justify-center" style="display: none;">
+        <h1 id="countdownText" class="text-[150px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-800 drop-shadow-[0_0_30px_rgba(59,130,246,0.8)] leading-none transition-transform duration-200">3</h1>
+        <p class="text-xs text-blue-400 font-bold uppercase tracking-[0.5em] mt-8 animate-pulse">Get Ready</p>
     </div>
 
     <div id="offlineOverlay" class="fixed inset-0 z-[30000] bg-red-900/95 flex flex-col items-center justify-center p-6" style="display: none; backdrop-filter: blur(10px);">
@@ -263,12 +290,26 @@
 
     <script>
         // --- OFFLINE/ONLINE DETECTION ---
-        window.addEventListener('offline', () => {
-            document.getElementById('offlineOverlay').style.display = 'flex';
-        });
-        window.addEventListener('online', () => {
-            document.getElementById('offlineOverlay').style.display = 'none';
-        });
+        window.addEventListener('offline', () => { document.getElementById('offlineOverlay').style.display = 'flex'; });
+        window.addEventListener('online', () => { document.getElementById('offlineOverlay').style.display = 'none'; });
+
+        // --- WEB AUDIO API FOR BEEP SOUNDS (No external files needed) ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(freq, type, duration) {
+            try {
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
 
         let adminClicks = 0;
         let isPlaying = false;
@@ -319,63 +360,45 @@
             document.getElementById('wallBal').innerText = "₹" + bal;
         }
 
+        // [All admin & wallet functions remain completely unchanged]
         function processWithdraw() {
             const upi = document.getElementById('withUpi').value.trim();
             const amtStr = document.getElementById('withAmt').value.trim();
             const amt = parseInt(amtStr); 
             const user = localStorage.getItem('nexus_active');
             let currentBal = parseFloat(localStorage.getItem(user + '_bal') || '0.00');
-
             if (!upi) return alert("Bhai, apna UPI ID toh daal!");
             if (isNaN(amt) || amt < 50) return alert("Minimum withdrawal ₹50 hai mere bhai!");
             if (amt > currentBal) return alert("Tere wallet mein itne paise nahi hain!");
-
             currentBal -= amt;
             localStorage.setItem(user + '_bal', currentBal.toFixed(2));
             updateUI();
-
             const rand = Math.floor(1000 + Math.random() * 9000);
             const secretHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
             const wdCode = `WD-${amt}-${rand}-${secretHash}`;
-
             closeOverlay('withdrawOverlay');
             document.getElementById('withUpi').value = '';
             document.getElementById('withAmt').value = '';
-
             const adminPhone = "917309433678"; 
             const msg = `🚨 *NEW PAYOUT REQUEST* 🚨%0A%0A👤 *Gamer ID:* ${user}%0A💳 *UPI ID:* ${upi}%0A💰 *Amount:* ₹${amt}%0A🔐 *Secure Code:* ${wdCode}%0A%0A_Admin, please verify this code in your panel before paying._`;
-
             window.location.href = `https://wa.me/${adminPhone}?text=${msg}`;
         }
-
         function verifyWithdrawal() {
             const code = document.getElementById('verifyWdCode').value.toUpperCase().trim();
             if(!code) return alert("Code daalo bhai!");
-
             let paidCodes = JSON.parse(localStorage.getItem('admin_paid_codes') || '[]');
             if(paidCodes.includes(code)) return alert("🚨 SCAM ALERT! Ye code pehle hi pay ho chuka hai.");
-
             const parts = code.split('-');
             if(parts.length !== 4 || parts[0] !== 'WD') return alert("❌ Invalid Format! Code Fake hai.");
-
-            const amt = parseInt(parts[1]);
-            const rand = parseInt(parts[2]);
-            const providedHash = parseInt(parts[3]);
-
+            const amt = parseInt(parts[1]); const rand = parseInt(parts[2]); const providedHash = parseInt(parts[3]);
             if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return alert("❌ Invalid Code!");
-
             const expectedHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
-
             if(providedHash === expectedHash) {
                 alert(`✅ GENUINE REQUEST!\n\nAmount: ₹${amt}\n\nUser ne game me paise kamaye hain. Ab tum use GPay kar sakte ho.`);
-                paidCodes.push(code);
-                localStorage.setItem('admin_paid_codes', JSON.stringify(paidCodes));
+                paidCodes.push(code); localStorage.setItem('admin_paid_codes', JSON.stringify(paidCodes));
                 document.getElementById('verifyWdCode').value = '';
-            } else {
-                alert("❌ FAKE CODE! Payment mat karna!");
-            }
+            } else { alert("❌ FAKE CODE! Payment mat karna!"); }
         }
-
         function generatePromo() {
             const amtStr = document.getElementById('genAmt').value;
             if(!amtStr || amtStr <= 0) return alert("Enter valid amount!");
@@ -385,69 +408,45 @@
             const finalCode = `NX${amt}-${rand}-${secretHash}`;
             document.getElementById('generatedCode').innerText = finalCode;
         }
-
         function redeemCode() {
             const code = document.getElementById('promoCode').value.toUpperCase().trim();
             const user = localStorage.getItem('nexus_active');
             const current = parseFloat(localStorage.getItem(user + '_bal'));
-            
             let usedCodes = JSON.parse(localStorage.getItem(user + '_used_codes') || '[]');
             if(usedCodes.includes(code)) return alert("Chalaki mat kar bhai! Ye code pehle hi use ho chuka hai.");
-
             const parts = code.split('-');
             if(parts.length !== 3 || !parts[0].startsWith('NX')) return alert("Invalid or Fake Code!");
-
-            const amt = parseInt(parts[0].replace('NX', ''));
-            const rand = parseInt(parts[1]);
-            const providedHash = parseInt(parts[2]);
-
+            const amt = parseInt(parts[0].replace('NX', '')); const rand = parseInt(parts[1]); const providedHash = parseInt(parts[2]);
             if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return alert("Invalid Code!");
-
             const expectedHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
-
             if(providedHash === expectedHash) {
                 localStorage.setItem(user + '_bal', (current + amt).toFixed(2));
-                usedCodes.push(code);
-                localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
-                alert(`₹${amt} Successfully Added to Wallet!`);
-                updateUI();
-                document.getElementById('promoCode').value = '';
-            } else {
-                alert("Fake Code Detected! System Alert Triggered.");
-            }
+                usedCodes.push(code); localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
+                alert(`₹${amt} Successfully Added to Wallet!`); updateUI(); document.getElementById('promoCode').value = '';
+            } else { alert("Fake Code Detected! System Alert Triggered."); }
         }
-
         function handleAdminClick() {
             adminClicks++; 
             if(adminClicks >= 5) { 
-                adminClicks = 0; 
-                const pwd = prompt("Enter Admin PIN:");
-                if(pwd === "7309") {
-                    openOverlay('adminOverlay'); 
-                } else if(pwd !== null) {
-                    alert("❌ Wrong PIN!");
-                }
+                adminClicks = 0; const pwd = prompt("Enter Admin PIN:");
+                if(pwd === "7309") { openOverlay('adminOverlay'); } else if(pwd !== null) { alert("❌ Wrong PIN!"); }
             }
         }
-
         function setBalance() {
             const target = document.getElementById('adminUser').value;
             const amt = document.getElementById('adminAmt').value;
             if(!target || !amt) return alert("Details bharo bhai!");
             localStorage.setItem(target + '_bal', parseFloat(amt).toFixed(2));
-            alert("Admin: Local Balance Updated!"); 
-            updateUI(); 
-            closeOverlay('adminOverlay');
+            alert("Admin: Local Balance Updated!"); updateUI(); closeOverlay('adminOverlay');
         }
 
         function startMatch(fee, speedLevel) {
             if(isPlaying) return; 
             
-            // Check Internet before starting
-            if(!navigator.onLine) {
-                document.getElementById('offlineOverlay').style.display = 'flex';
-                return;
-            }
+            // Resume audio context on first user click
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            if(!navigator.onLine) { document.getElementById('offlineOverlay').style.display = 'flex'; return; }
 
             const user = localStorage.getItem('nexus_active');
             const bal = parseFloat(localStorage.getItem(user + '_bal'));
@@ -457,35 +456,94 @@
             localStorage.setItem(user + '_bal', (bal - fee).toFixed(2));
             updateUI();
             
-            // Start the Real-time Matchmaking UI
             startMatchmaking(fee, speedLevel);
         }
 
+        // --- NEW MATCHMAKING & COUNTDOWN SYSTEM ---
         function startMatchmaking(fee, speedLevel) {
-            document.getElementById('matchmakingOverlay').style.display = 'flex';
+            const overlay = document.getElementById('matchmakingOverlay');
+            overlay.style.display = 'flex';
+            
+            // Reset UI states
+            document.getElementById('searchRadar').style.display = 'block';
+            document.getElementById('oppFoundInfo').style.display = 'none';
+            document.getElementById('matchmakingTitle').innerText = "Scanning...";
+            document.getElementById('matchmakingTitle').className = "text-2xl font-black italic text-white mb-2 uppercase tracking-widest pulse-text";
+            document.getElementById('matchmakingSub').innerText = "Locating active players";
+            document.getElementById('matchTimerContainer').style.display = 'inline-block';
+            
             let timeLeft = 10;
             document.getElementById('searchTimer').innerText = timeLeft + "s";
             
-            // Randomly pick a time between 2 to 7 seconds for the match to "connect"
-            const randomWaitTime = Math.floor(Math.random() * 5000) + 2000; 
+            const randomWaitTime = Math.floor(Math.random() * 4000) + 2000; 
 
             matchSearchInt = setInterval(() => {
                 timeLeft--;
-                if(timeLeft >= 0) {
-                    document.getElementById('searchTimer').innerText = timeLeft + "s";
-                }
+                if(timeLeft >= 0) document.getElementById('searchTimer').innerText = timeLeft + "s";
             }, 1000);
 
             matchTimeout = setTimeout(() => {
                 clearInterval(matchSearchInt);
-                document.getElementById('matchmakingOverlay').style.display = 'none';
-                initArena(fee, speedLevel);
+                
+                // Show Opponent Found
+                playBeep(800, 'sine', 0.2); // Success sound
+                document.getElementById('searchRadar').style.display = 'none';
+                document.getElementById('oppFoundInfo').style.display = 'block';
+                document.getElementById('fakeOpponentId').innerText = "Gamer" + Math.floor(1000 + Math.random() * 8000);
+                document.getElementById('matchmakingTitle').innerText = "Match Found!";
+                document.getElementById('matchmakingTitle').className = "text-2xl font-black italic text-green-400 mb-2 uppercase tracking-widest";
+                document.getElementById('matchmakingSub').innerText = "Preparing Arena...";
+                document.getElementById('matchTimerContainer').style.display = 'none';
+
+                // Wait 1.5s then start countdown
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    startCountdown(fee, speedLevel);
+                }, 1500);
+
             }, randomWaitTime);
+        }
+
+        function startCountdown(fee, speedLevel) {
+            const countdownOverlay = document.getElementById('countdownOverlay');
+            const countText = document.getElementById('countdownText');
+            countdownOverlay.style.display = 'flex';
+            
+            let count = 3;
+            countText.innerText = count;
+            countText.style.transform = "scale(1)";
+            playBeep(600, 'square', 0.1);
+
+            const countInt = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    countText.innerText = count;
+                    // Pop animation
+                    countText.style.transform = "scale(1.3)";
+                    setTimeout(() => countText.style.transform = "scale(1)", 150);
+                    playBeep(600, 'square', 0.1);
+                } else {
+                    clearInterval(countInt);
+                    countText.innerText = "GO!";
+                    countText.style.transform = "scale(1.5)";
+                    countText.className = "text-[120px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-600 drop-shadow-[0_0_40px_rgba(74,222,128,0.8)] leading-none transition-transform duration-100";
+                    playBeep(1000, 'square', 0.4); // High beep for GO
+                    
+                    setTimeout(() => {
+                        countdownOverlay.style.display = 'none';
+                        // Reset class for next time
+                        countText.className = "text-[150px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-800 drop-shadow-[0_0_30px_rgba(59,130,246,0.8)] leading-none transition-transform duration-200";
+                        initArena(fee, speedLevel);
+                    }, 600);
+                }
+            }, 1000);
         }
 
         function startPractice() { 
             if(isPlaying) return;
-            initArena(0, 5); 
+            if(!navigator.onLine) { document.getElementById('offlineOverlay').style.display = 'flex'; return; }
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            startMatchmaking(0, 5); // Goes through the same cool flow for practice!
         }
 
         function returnToArena() {
@@ -494,12 +552,14 @@
             if(matchSearchInt) clearInterval(matchSearchInt);
             if(matchTimeout) clearTimeout(matchTimeout);
             document.getElementById('matchmakingOverlay').style.display = 'none';
+            document.getElementById('countdownOverlay').style.display = 'none';
             document.getElementById('gameArena').style.display = 'none';
             document.getElementById('resultOverlay').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             updateUI();
         }
 
+        // --- GAME ARENA LOGIC ---
         function initArena(fee, speedLevel) {
             isPlaying = true;
             document.getElementById('mainApp').style.display = 'none';
@@ -610,6 +670,7 @@
                         obs.splice(i, 1); 
                         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
                         ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        playBeep(200, 'sawtooth', 0.1); // Small collision sound
                         continue; 
                     }
                     
