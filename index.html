@@ -85,7 +85,7 @@
                 </div>
             </div>
             
-            <button onclick="closeTutorial()" class="w-full bg-blue-600 py-4 rounded-2xl text-[11px] font-black uppercase shadow-lg shadow-blue-500/30 active:scale-95 transition">I Understand, Let's Play!</button>
+            <button onclick="closeTutorial()" class="w-full bg-gray-600 py-4 rounded-2xl text-[11px] font-black uppercase shadow-lg shadow-gray-500/30 active:scale-95 transition">Close Rules</button>
         </div>
     </div>
 
@@ -183,6 +183,14 @@
                         <div class="w-16 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center text-3xl shadow-xl shadow-yellow-500/30"><i class="fa-solid fa-crown text-black"></i></div>
                         <div><h2 id="userDisplay" class="text-2xl font-black italic uppercase">Gamer</h2><p class="text-[10px] text-yellow-500 font-black uppercase tracking-widest">Elite Member</p></div>
                     </div>
+                </div>
+
+                <div onclick="openTutorial()" class="glass p-6 rounded-3xl mb-6 border border-blue-500/30 flex items-center justify-between active:scale-95 transition cursor-pointer bg-gradient-to-r from-blue-900/20 to-transparent">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-500/50"><i class="fa-solid fa-circle-play text-blue-400"></i></div>
+                        <span class="text-xs font-black text-white uppercase italic tracking-wider">How to Play / Rules</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-500"></i>
                 </div>
 
                 <div class="glass p-8 rounded-[3rem] mb-6 border-l-4 border-green-500 bg-gradient-to-br from-green-900/10 to-transparent">
@@ -391,6 +399,11 @@
 
         // --- LIVE AI DEMO TUTORIAL LOGIC ---
         let demoPlaying = false;
+        function openTutorial() {
+            document.getElementById('tutorialOverlay').style.display = 'flex';
+            startLiveDemo();
+        }
+
         function startLiveDemo() {
             const canvas = document.getElementById('demoCanvas');
             if(!canvas) return;
@@ -428,7 +441,7 @@
                     
                     // AI auto jump detection
                     if(o.x > 40 && o.x < 90 && p.y >= 80) {
-                        p.dy = -10; // Perfect jump timing
+                        p.dy = -10; 
                     }
                     if(o.x + o.w < 0) obs.splice(i, 1);
                 }
@@ -438,9 +451,7 @@
         }
 
         function closeTutorial() {
-            const user = localStorage.getItem('nexus_active');
-            localStorage.setItem(user + '_tutorial', 'true');
-            demoPlaying = false; // Stop background demo to save battery
+            demoPlaying = false; 
             document.getElementById('tutorialOverlay').style.display = 'none';
         }
 
@@ -448,7 +459,6 @@
         window.addEventListener('offline', () => { document.getElementById('offlineOverlay').style.display = 'flex'; });
         window.addEventListener('online', () => { document.getElementById('offlineOverlay').style.display = 'none'; });
 
-        // --- WEB AUDIO API FOR BEEP SOUNDS ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeep(freq, type, duration) {
             try {
@@ -481,7 +491,6 @@
             "Kapil", "Lucky_Boy", "Chhotu", "Rajput_Boy", "Devil", "Ninja", "Avinash", "Sumit", "Raj"
         ];
 
-        // --- LOGIN WITH PASSWORD SECURITY ---
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
             const pwd = document.getElementById('userPwd').value.trim();
@@ -548,13 +557,6 @@
                     localStorage.setItem(user + '_bonus_bal', localStorage.getItem(user + '_bal'));
                     localStorage.setItem(user + '_win_bal', '0.00');
                 }
-                
-                // 🚀 SHOW TUTORIAL AND START LIVE DEMO IF NEVER SEEN 🚀
-                if(!localStorage.getItem(user + '_tutorial')) {
-                    document.getElementById('tutorialOverlay').style.display = 'flex';
-                    startLiveDemo();
-                }
-                
                 updateUI();
             }
         }
