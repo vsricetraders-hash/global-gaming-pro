@@ -48,6 +48,7 @@
         <p class="text-[10px] text-gray-500 font-bold uppercase mb-12 italic tracking-widest text-center">Global Battle Arena</p>
         <div class="space-y-4">
             <input id="userName" type="text" placeholder="Create Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
+            <input id="mobileNum" type="number" placeholder="Enter Mobile Number" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
             <input id="refCode" type="text" placeholder="Referral Code (Optional)" class="w-full bg-green-500/5 border border-green-500/30 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-green-500 transition-all text-center text-green-400 placeholder-green-700/50">
             <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-blue-500/30 active:scale-95 transition mt-2">Enter Empire</button>
         </div>
@@ -323,16 +324,32 @@
             "Kapil", "Lucky_Boy", "Chhotu", "Rajput_Boy", "Devil", "Ninja", "Avinash", "Sumit", "Raj"
         ];
 
+        // --- DEVICE LOCK & MOBILE VERIFICATION LOGIC ---
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
+            const mobile = document.getElementById('mobileNum').value.trim();
             const refCode = document.getElementById('refCode').value.trim();
-            if(!user) return alert("Enter Gamer ID!");
+            
+            if(!user) return alert("Bhai, Gamer ID daalna zaroori hai!");
+            if(mobile.length < 10) return alert("Sahi 10-digit Mobile Number daalo!");
+
             const existingBal = localStorage.getItem(user + '_bal');
+            const deviceUsed = localStorage.getItem('device_bonus_claimed');
+
             localStorage.setItem('nexus_active', user);
+            
             if(!existingBal) {
                 if(refCode) {
-                    localStorage.setItem(user + '_bal', '10.00'); 
-                    alert("🎉 Referral Code Applied! ₹10 Free Bonus Added.");
+                    if(deviceUsed === 'true') {
+                        // Agar phone pehle use ho chuka hai, toh bonus 0
+                        localStorage.setItem(user + '_bal', '0.00'); 
+                        alert("⚠️ Ek Phone pe sirf ek baar ₹10 Bonus milta hai! Account created without bonus.");
+                    } else {
+                        // Naya phone hai, toh ₹10 de do aur device lock kar do
+                        localStorage.setItem(user + '_bal', '10.00'); 
+                        localStorage.setItem('device_bonus_claimed', 'true');
+                        alert("🎉 Referral Code Applied! ₹10 Free Bonus Added.");
+                    }
                 } else {
                     localStorage.setItem(user + '_bal', '0.00');
                 }
@@ -489,10 +506,9 @@
                 document.getElementById('searchRadar').style.display = 'none';
                 document.getElementById('oppFoundInfo').style.display = 'block';
                 
-                // GENERATE NATURAL INDIAN NAME
                 const randomName = naturalNames[Math.floor(Math.random() * naturalNames.length)];
                 const randomNum = Math.floor(Math.random() * 999);
-                const finalOpponentName = (Math.random() > 0.4) ? randomName + randomNum : randomName; // 60% chance to add a number
+                const finalOpponentName = (Math.random() > 0.4) ? randomName + randomNum : randomName;
                 document.getElementById('fakeOpponentId').innerText = finalOpponentName;
                 
                 document.getElementById('matchmakingTitle').innerText = "Match Found!";
@@ -541,13 +557,11 @@
             }, 1000);
         }
 
-        // --- PRACTICE MODE FIX (NO MATCHMAKING) ---
         function startPractice() { 
             if(isPlaying) return;
             if(!navigator.onLine) { document.getElementById('offlineOverlay').style.display = 'flex'; return; }
             if(audioCtx.state === 'suspended') audioCtx.resume();
             
-            // Practice starts instantly, no fake player scanning
             initArena(0, 5); 
         }
 
@@ -564,7 +578,6 @@
             updateUI();
         }
 
-        // --- GAME ARENA LOGIC ---
         function initArena(fee, speedLevel) {
             isPlaying = true;
             document.getElementById('mainApp').style.display = 'none';
