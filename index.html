@@ -118,10 +118,20 @@
             </div>
 
             <div id="wallet" class="page-content text-center">
-                <div class="glass p-12 rounded-[3.5rem] mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent">
-                    <p class="text-[10px] text-gray-500 font-black uppercase mb-4 tracking-widest">Available Balance</p>
-                    <h1 id="wallBal" class="text-6xl font-black italic tracking-tighter">₹0.00</h1>
+                <div class="glass p-8 rounded-[3.5rem] mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent relative">
+                    <p class="text-[10px] text-gray-500 font-black uppercase mb-2 tracking-widest">Total Balance</p>
+                    <h1 id="wallBal" class="text-5xl font-black italic tracking-tighter mb-6 text-white">₹0.00</h1>
+                    
+                    <div class="bg-black/30 border border-white/5 rounded-2xl p-4 mb-2 flex justify-between items-center">
+                        <span class="text-[9px] text-gray-400 font-bold uppercase">Deposit / Bonus:</span>
+                        <span id="bonusBalDisplay" class="text-sm font-black text-yellow-500 italic">₹0.00</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex justify-between items-center shadow-inner">
+                        <span class="text-[10px] text-white font-black uppercase">Withdrawable Winnings:</span>
+                        <span id="winBalDisplay" class="text-lg font-black text-green-400 italic drop-shadow-[0_0_10px_rgba(74,222,128,0.5)]">₹0.00</span>
+                    </div>
                 </div>
+                
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <button onclick="openOverlay('depositOverlay')" class="bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs shadow-2xl">Add Cash</button>
                     <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs">Withdraw</button>
@@ -144,7 +154,7 @@
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <h3 class="text-xl font-black italic uppercase text-green-400">Refer & Earn</h3>
-                            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">Get ₹20 Per Friend</p>
+                            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">Get ₹10 Per Friend</p>
                         </div>
                         <i class="fa-solid fa-users text-xl text-green-500"></i>
                     </div>
@@ -254,12 +264,18 @@
 
     <div id="withdrawOverlay" class="overlay" style="display: none;">
         <div class="flex flex-col min-h-full p-6 justify-center w-full max-w-sm mx-auto">
-            <div class="flex justify-between items-center mb-10"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Withdraw</h2><button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
+            <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-black italic text-blue-500 uppercase">Withdraw</h2><button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
+            
+            <div class="glass p-4 rounded-2xl mb-6 text-center border border-green-500/30">
+                <p class="text-[9px] text-gray-400 font-bold uppercase mb-1">Withdrawable Balance</p>
+                <h3 id="withModalBal" class="text-2xl font-black text-green-400 italic">₹0.00</h3>
+            </div>
+
             <div class="space-y-6">
                 <input id="withUpi" type="text" placeholder="Enter UPI ID (e.g. name@paytm)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none text-center">
                 <input id="withAmt" type="number" placeholder="Amount (Min ₹50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none text-center">
                 <button onclick="processWithdraw()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-lg shadow-blue-500/40 active:scale-95 transition">Request Payout</button>
-                <p class="text-[9px] text-gray-500 font-bold uppercase text-center mt-4">Note: Payouts are verified before processing.</p>
+                <p class="text-[9px] text-gray-500 font-bold uppercase text-center mt-4">Note: Only Winnings can be withdrawn.</p>
             </div>
         </div>
     </div>
@@ -284,10 +300,10 @@
             </div>
 
             <div class="glass p-6 rounded-3xl">
-                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Direct Balance Update (Local)</p>
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Direct Winnings Update (Admin)</p>
                 <input id="adminUser" type="text" placeholder="Target Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
-                <input id="adminAmt" type="number" placeholder="New Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
-                <button onclick="setBalance()" class="w-full bg-yellow-600 text-black py-4 rounded-xl font-black uppercase text-[10px]">Update Local Balance</button>
+                <input id="adminAmt" type="number" placeholder="New Winning Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
+                <button onclick="setBalance()" class="w-full bg-yellow-600 text-black py-4 rounded-xl font-black uppercase text-[10px]">Update Winnings Balance</button>
             </div>
         </div>
     </div>
@@ -338,11 +354,9 @@
             setTimeout(() => { alertOverlay.style.display = 'none'; }, 300);
         }
 
-        // --- OFFLINE/ONLINE DETECTION ---
         window.addEventListener('offline', () => { document.getElementById('offlineOverlay').style.display = 'flex'; });
         window.addEventListener('online', () => { document.getElementById('offlineOverlay').style.display = 'none'; });
 
-        // --- WEB AUDIO API FOR BEEP SOUNDS ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeep(freq, type, duration) {
             try {
@@ -375,7 +389,7 @@
             "Kapil", "Lucky_Boy", "Chhotu", "Rajput_Boy", "Devil", "Ninja", "Avinash", "Sumit", "Raj"
         ];
 
-        // --- LOGIN WITH PASSWORD SECURITY ---
+        // 🚀 DUAL WALLET LOGIN SYSTEM 🚀
         function loginUser() {
             const user = document.getElementById('userName').value.trim();
             const pwd = document.getElementById('userPwd').value.trim();
@@ -385,8 +399,15 @@
             if(!pwd) return showCustomAlert("Password Required", "Password daalna zaroori hai!", "error");
 
             const savedPwd = localStorage.getItem(user + '_pwd');
-            const existingBal = localStorage.getItem(user + '_bal');
             const deviceUsed = localStorage.getItem('device_bonus_claimed');
+
+            // Old user migration to dual wallet system (if needed)
+            if(localStorage.getItem(user + '_bal') && !localStorage.getItem(user + '_bonus_bal') && !localStorage.getItem(user + '_win_bal')) {
+                localStorage.setItem(user + '_bonus_bal', localStorage.getItem(user + '_bal'));
+                localStorage.setItem(user + '_win_bal', '0.00');
+            }
+
+            const existingBonusBal = localStorage.getItem(user + '_bonus_bal');
 
             if(savedPwd) {
                 if(savedPwd !== pwd) {
@@ -397,25 +418,27 @@
                 return;
             }
 
+            // Naya user
             localStorage.setItem(user + '_pwd', pwd);
             localStorage.setItem('nexus_active', user);
             
-            if(!existingBal) {
+            if(!existingBonusBal) {
+                localStorage.setItem(user + '_win_bal', '0.00'); // Set Winnings to 0
                 if(refCode) {
                     if(deviceUsed === 'true') {
-                        localStorage.setItem(user + '_bal', '0.00'); 
+                        localStorage.setItem(user + '_bonus_bal', '0.00'); 
                         showCustomAlert("Security System", "Ek Device pe sirf ek baar ₹10 Bonus milta hai! Account created without bonus.", "warning");
                         setTimeout(() => { location.reload(); }, 2500);
                         return;
                     } else {
-                        localStorage.setItem(user + '_bal', '10.00'); 
+                        localStorage.setItem(user + '_bonus_bal', '10.00'); 
                         localStorage.setItem('device_bonus_claimed', 'true');
-                        showCustomAlert("Success", "Referral Code Applied! ₹10 Free Bonus Added.", "success");
-                        setTimeout(() => { location.reload(); }, 2000);
+                        showCustomAlert("Success", "Referral Code Applied! ₹10 Bonus Added. (Play to Convert to Winnings)", "success");
+                        setTimeout(() => { location.reload(); }, 2500);
                         return;
                     }
                 } else {
-                    localStorage.setItem(user + '_bal', '0.00');
+                    localStorage.setItem(user + '_bonus_bal', '0.00');
                 }
             }
             location.reload();
@@ -430,6 +453,13 @@
                 document.getElementById('mainApp').style.display = 'block';
                 document.getElementById('userDisplay').innerText = user;
                 document.getElementById('myRefCode').innerText = user.toUpperCase();
+                
+                // Safety check for old accounts
+                if(localStorage.getItem(user + '_bal') && !localStorage.getItem(user + '_bonus_bal')) {
+                    localStorage.setItem(user + '_bonus_bal', localStorage.getItem(user + '_bal'));
+                    localStorage.setItem(user + '_win_bal', '0.00');
+                }
+                
                 updateUI();
             }
         }
@@ -442,29 +472,38 @@
 
         function updateUI() {
             const user = localStorage.getItem('nexus_active');
-            const bal = parseFloat(localStorage.getItem(user + '_bal') || '0.00').toFixed(2);
-            document.getElementById('topBal').innerText = "₹" + bal;
-            document.getElementById('wallBal').innerText = "₹" + bal;
+            const bonusBal = parseFloat(localStorage.getItem(user + '_bonus_bal') || '0.00');
+            const winBal = parseFloat(localStorage.getItem(user + '_win_bal') || '0.00');
+            
+            const totalBal = (bonusBal + winBal).toFixed(2);
+            
+            document.getElementById('topBal').innerText = "₹" + totalBal;
+            document.getElementById('wallBal').innerText = "₹" + totalBal;
+            
+            document.getElementById('bonusBalDisplay').innerText = "₹" + bonusBal.toFixed(2);
+            document.getElementById('winBalDisplay').innerText = "₹" + winBal.toFixed(2);
+            document.getElementById('withModalBal').innerText = "₹" + winBal.toFixed(2); // Updates withdraw overlay
         }
 
+        // 🚀 WITHDRAWAL CHECKS ONLY WINNINGS BALANCE 🚀
         function processWithdraw() {
             const upi = document.getElementById('withUpi').value.trim();
             const amtStr = document.getElementById('withAmt').value.trim();
             const amt = parseInt(amtStr); 
             const user = localStorage.getItem('nexus_active');
-            let currentBal = parseFloat(localStorage.getItem(user + '_bal') || '0.00');
             
-            const hasDeposited = localStorage.getItem(user + '_has_deposited') === 'true';
-            if (!hasDeposited) {
-                return showCustomAlert("Security Lock", "Withdrawal unlock karne ke liye pehle Cash Add (Deposit) karein! Bina deposit ke withdrawal allowed nahi hai.", "warning");
-            }
+            let winBal = parseFloat(localStorage.getItem(user + '_win_bal') || '0.00');
 
             if (!upi) return showCustomAlert("Invalid Input", "Bhai, apna UPI ID toh daal!", "error");
             if (isNaN(amt) || amt < 50) return showCustomAlert("Limit Error", "Minimum withdrawal ₹50 hai mere bhai!", "error");
-            if (amt > currentBal) return showCustomAlert("Low Balance", "Tere wallet mein itne paise nahi hain!", "error");
             
-            currentBal -= amt;
-            localStorage.setItem(user + '_bal', currentBal.toFixed(2));
+            if (amt > winBal) {
+                return showCustomAlert("Withdrawal Rejected", `Tere Withdrawable Winnings mein sirf ₹${winBal.toFixed(2)} hain.\n\nDeposit aur Bonus ka paisa sirf khelne ke liye hota hai!`, "warning");
+            }
+            
+            // Deduct strictly from winnings
+            winBal -= amt;
+            localStorage.setItem(user + '_win_bal', winBal.toFixed(2));
             updateUI();
             
             const rand = Math.floor(1000 + Math.random() * 9000);
@@ -491,7 +530,7 @@
             if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return showCustomAlert("Format Error", "Invalid Code!", "error");
             const expectedHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
             if(providedHash === expectedHash) {
-                showCustomAlert("Genuine Request", `Amount: ₹${amt}\nUser ne game me paise kamaye hain. Ab tum use GPay kar sakte ho.`, "success");
+                showCustomAlert("Genuine Request", `Amount: ₹${amt}\nUser ne Winnings withdraw kiye hain. GPay kar do.`, "success");
                 paidCodes.push(code); localStorage.setItem('admin_paid_codes', JSON.stringify(paidCodes));
                 document.getElementById('verifyWdCode').value = '';
             } else { showCustomAlert("Fake Code", "FAKE CODE! Payment mat karna!", "error"); }
@@ -510,7 +549,7 @@
         function redeemCode() {
             const code = document.getElementById('promoCode').value.toUpperCase().trim();
             const user = localStorage.getItem('nexus_active');
-            const current = parseFloat(localStorage.getItem(user + '_bal'));
+            let bonusBal = parseFloat(localStorage.getItem(user + '_bonus_bal') || '0.00');
             let usedCodes = JSON.parse(localStorage.getItem(user + '_used_codes') || '[]');
             
             if(usedCodes.includes(code)) return showCustomAlert("Alert", "Chalaki mat kar bhai! Ye code pehle hi use ho chuka hai.", "error");
@@ -522,13 +561,12 @@
             const expectedHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
             
             if(providedHash === expectedHash) {
-                localStorage.setItem(user + '_bal', (current + amt).toFixed(2));
+                // Deposit goes to Bonus/Deposit wallet (Cannot be instantly withdrawn)
+                localStorage.setItem(user + '_bonus_bal', (bonusBal + amt).toFixed(2));
                 usedCodes.push(code); 
                 localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
                 
-                localStorage.setItem(user + '_has_deposited', 'true');
-                
-                showCustomAlert("Deposit Success", `₹${amt} Successfully Added to Wallet!\n\n✅ Withdrawal is now UNLOCKED!`, "success"); 
+                showCustomAlert("Deposit Success", `₹${amt} Added to Deposit Wallet!\n\nPlay matches to convert it to Winnings!`, "success"); 
                 updateUI(); 
                 document.getElementById('promoCode').value = '';
             } else { 
@@ -543,25 +581,39 @@
                 if(pwd === "7309") { openOverlay('adminOverlay'); } else if(pwd !== null) { showCustomAlert("Access Denied", "Wrong PIN!", "error"); }
             }
         }
+        
         function setBalance() {
             const target = document.getElementById('adminUser').value;
             const amt = document.getElementById('adminAmt').value;
             if(!target || !amt) return showCustomAlert("Error", "Details bharo bhai!", "error");
-            localStorage.setItem(target + '_bal', parseFloat(amt).toFixed(2));
-            showCustomAlert("Admin Update", "Local Balance Updated!", "success"); updateUI(); closeOverlay('adminOverlay');
+            localStorage.setItem(target + '_win_bal', parseFloat(amt).toFixed(2)); // Updates Winnings
+            showCustomAlert("Admin Update", "Winnings Balance Updated!", "success"); updateUI(); closeOverlay('adminOverlay');
         }
 
+        // 🚀 DUAL WALLET BETTING LOGIC 🚀
         function startMatch(fee, speedLevel) {
             if(isPlaying) return; 
             if(audioCtx.state === 'suspended') audioCtx.resume();
             if(!navigator.onLine) { document.getElementById('offlineOverlay').style.display = 'flex'; return; }
 
             const user = localStorage.getItem('nexus_active');
-            const bal = parseFloat(localStorage.getItem(user + '_bal'));
+            let bonusBal = parseFloat(localStorage.getItem(user + '_bonus_bal') || '0.00');
+            let winBal = parseFloat(localStorage.getItem(user + '_win_bal') || '0.00');
+            const totalBal = bonusBal + winBal;
             
-            if(bal < fee) return openOverlay('depositOverlay');
+            if(totalBal < fee) return openOverlay('depositOverlay');
             
-            localStorage.setItem(user + '_bal', (bal - fee).toFixed(2));
+            // DEDUCT FROM BONUS FIRST, THEN WINNINGS
+            if (bonusBal >= fee) {
+                bonusBal -= fee;
+            } else {
+                let remainingFee = fee - bonusBal;
+                bonusBal = 0;
+                winBal -= remainingFee;
+            }
+
+            localStorage.setItem(user + '_bonus_bal', bonusBal.toFixed(2));
+            localStorage.setItem(user + '_win_bal', winBal.toFixed(2));
             updateUI();
             
             startMatchmaking(fee, speedLevel);
@@ -650,7 +702,6 @@
             if(isPlaying) return;
             if(!navigator.onLine) { document.getElementById('offlineOverlay').style.display = 'flex'; return; }
             if(audioCtx.state === 'suspended') audioCtx.resume();
-            
             initArena(0, 5); 
         }
 
@@ -745,22 +796,20 @@
                 if(!isPlaying) return; 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
-                // 🚀 REAL GROUND REALITY BALANCE 🚀
                 let extraSpeed = 0;
-                if(score > 20) extraSpeed += (score - 20) * 0.05; // 20 tak makkhan
-                if(score > 30) extraSpeed += (score - 30) * 0.1;  // 30 ke baad paseena
-                if(score > 40) extraSpeed += (score - 40) * 0.25; // 40 ke baad death zone
+                if(score > 20) extraSpeed += (score - 20) * 0.05; 
+                if(score > 30) extraSpeed += (score - 30) * 0.1;  
+                if(score > 40) extraSpeed += (score - 40) * 0.25; 
                 
                 currentSpeed = speedLevel + extraSpeed;
 
-                p.dy += 0.8; // Gravity wapas normal kar di smooth controls ke liye
+                p.dy += 0.8; 
                 p.y += p.dy; 
                 if(p.y > 350) p.y = 350; 
                 
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
-                // Gap logic adjusted for human play
                 let minSafeGap = currentSpeed * 22; 
                 let dynamicGap = Math.max(minSafeGap, 240 - (score * 2)); 
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
@@ -800,7 +849,6 @@
                 if(isPlaying || fee === 0) requestAnimationFrame(draw);
             }
             
-            // Jump power wapas smooth normal (-14) kar diya
             canvas.ontouchstart = function(e) {
                 e.preventDefault();
                 e.stopPropagation(); 
@@ -812,7 +860,9 @@
 
         function showResult(myScore, oppScore, fee) {
             const user = localStorage.getItem('nexus_active');
-            const bal = parseFloat(localStorage.getItem(user + '_bal'));
+            let bonusBal = parseFloat(localStorage.getItem(user + '_bonus_bal') || '0.00');
+            let winBal = parseFloat(localStorage.getItem(user + '_win_bal') || '0.00');
+            
             document.getElementById('gameArena').style.display = 'none';
             const s1 = Number(myScore);
             const s2 = Number(oppScore);
@@ -827,7 +877,9 @@
                 resTitle.innerText = "VICTORY";
                 resTitle.className = "text-4xl font-black italic text-green-500 mb-2 uppercase";
                 resMessage.innerText = `You won ₹${winAmt.toFixed(2)}`;
-                localStorage.setItem(user + '_bal', (bal + winAmt).toFixed(2));
+                
+                // 🚀 WINNINGS GO TO WIN WALLET ONLY 🚀
+                localStorage.setItem(user + '_win_bal', (winBal + winAmt).toFixed(2));
                 
                 if(fee === 10) {
                     localStorage.setItem(user + '_first_win_10', 'true');
@@ -835,8 +887,10 @@
             } else if (s1 === s2) {
                 resTitle.innerText = "DRAW";
                 resTitle.className = "text-4xl font-black italic text-yellow-500 mb-2 uppercase";
-                resMessage.innerText = "Entry fee refunded";
-                localStorage.setItem(user + '_bal', (bal + fee).toFixed(2));
+                resMessage.innerText = "Entry fee refunded to Deposit";
+                
+                // Refund goes back to Bonus/Deposit
+                localStorage.setItem(user + '_bonus_bal', (bonusBal + fee).toFixed(2));
             } else {
                 resTitle.innerText = "DEFEAT";
                 resTitle.className = "text-4xl font-black italic text-red-500 mb-2 uppercase";
