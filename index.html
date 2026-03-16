@@ -178,7 +178,6 @@
                 <div class="absolute inset-4 bg-blue-500/10 rounded-full"></div>
                 <i class="fa-solid fa-crosshairs text-4xl text-blue-400"></i>
             </div>
-
             <div id="oppFoundInfo" class="hidden mb-8 w-full">
                 <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg shadow-red-500/50 border-2 border-white/20">
                     <i class="fa-solid fa-user-ninja text-3xl text-white"></i>
@@ -186,10 +185,8 @@
                 <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Opponent</p>
                 <h3 id="fakeOpponentId" class="text-2xl font-black italic text-red-400">GamerXXXX</h3>
             </div>
-
             <h2 id="matchmakingTitle" class="text-2xl font-black italic text-white mb-2 uppercase tracking-widest pulse-text">Scanning...</h2>
             <p id="matchmakingSub" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Locating active players</p>
-            
             <div id="matchTimerContainer" class="bg-[#0f172a] border border-blue-500/20 rounded-2xl px-8 py-3 inline-block shadow-inner">
                 <p id="searchTimer" class="text-2xl font-black text-blue-400 italic">10s</p>
             </div>
@@ -305,7 +302,7 @@
             const btn = document.getElementById('alertBtn');
             
             alertOverlay.style.display = 'flex';
-            void alertOverlay.offsetWidth; // Trigger reflow
+            void alertOverlay.offsetWidth;
             alertOverlay.style.opacity = '1';
             alertBox.style.transform = 'scale(1)';
             
@@ -695,19 +692,18 @@
             let targetBotScore = 0;
             let isWeakBot = false;
             
-            // 🚀 REALISTIC BOT TARGET SCORES 🚀
             if (fee === 10 && !hasWonFirst10) {
-                targetBotScore = Math.floor(Math.random() * 4) + 18; // 18-21 (Easy win for user)
+                targetBotScore = Math.floor(Math.random() * 4) + 18; 
             } else if (fee >= 50 && !hasPlayedBig) {
                 isWeakBot = false;
-                targetBotScore = Math.floor(Math.random() * 8) + 52; // 52-59 (Maha-Lock: Hard to beat)
+                targetBotScore = Math.floor(Math.random() * 8) + 52; 
                 localStorage.setItem(user + '_played_big', 'true'); 
             } else if (fee > 0) {
                 isWeakBot = Math.random() < 0.4; 
                 if(isWeakBot) {
-                    targetBotScore = Math.floor(Math.random() * 8) + 24; // 24-31 (Weak Bot)
+                    targetBotScore = Math.floor(Math.random() * 8) + 24; 
                 } else {
-                    targetBotScore = Math.floor(Math.random() * 10) + 42; // 42-51 (Strong Bot)
+                    targetBotScore = Math.floor(Math.random() * 10) + 42; 
                 }
             }
 
@@ -719,7 +715,6 @@
                     let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
                     document.getElementById('timer').innerText = `00:${displayTime}`;
                     
-                    // Subtle Rubber-banding (Capped at 60 max)
                     if (!isWeakBot && fee > 0 && !(fee === 10 && !hasWonFirst10)) {
                         if (score >= targetBotScore - 4 && targetBotScore < 60) {
                             targetBotScore += Math.floor(Math.random() * 3) + 1; 
@@ -750,23 +745,28 @@
                 if(!isPlaying) return; 
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 
-                // 🚀 EXTREMELY SMOOTH & NATURAL DIFFICULTY 🚀
-                currentSpeed = speedLevel + (score * 0.06); 
+                // 🚀 BRUTAL BUT SMOOTH DEATH CURVE 🚀
+                let extraSpeed = score * 0.1;
+                if(score > 25) extraSpeed += (score - 25) * 0.2;
+                if(score > 35) extraSpeed += (score - 35) * 0.5; // Pant gili yahan se hogi
+                
+                currentSpeed = speedLevel + extraSpeed;
 
-                p.dy += 0.8; 
+                p.dy += 1.0; // Gravity badha di taaki jump control hard ho jaye
                 p.y += p.dy; 
                 if(p.y > 350) p.y = 350; 
                 
                 ctx.fillStyle = '#3b82f6'; 
                 ctx.fillRect(60, p.y, p.w, p.h);
                 
-                // Mathematically safe gap (User ko cheat jaisa feel nahi hoga)
-                let minSafeGap = currentSpeed * 35; 
-                let dynamicGap = Math.max(minSafeGap, 260 - (score * 2)); 
+                // Gap bahut tezi se kam hoga
+                let minSafeGap = currentSpeed * 18; 
+                let dynamicGap = Math.max(minSafeGap, 250 - (score * 4)); 
                 let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
                 
                 if(lastDist > dynamicGap) { 
-                    if(lastDist > (dynamicGap + 120) || Math.random() < 0.03) { 
+                    let spawnChance = score > 35 ? 0.08 : 0.02;
+                    if(lastDist > (dynamicGap + 80) || Math.random() < spawnChance) { 
                         obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
                     }
                 }
@@ -799,12 +799,13 @@
                 if(isPlaying || fee === 0) requestAnimationFrame(draw);
             }
             
+            // Jump power badhayi taaki heavy gravity ke saath adjust ho sake
             canvas.ontouchstart = function(e) {
                 e.preventDefault();
                 e.stopPropagation(); 
-                if(p.y >= 350) p.dy = -14;
+                if(p.y >= 350) p.dy = -15; 
             };
-            canvas.onmousedown = function(e) { if(p.y >= 350) p.dy = -14; };
+            canvas.onmousedown = function(e) { if(p.y >= 350) p.dy = -15; };
             draw();
         }
 
