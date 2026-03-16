@@ -2,116 +2,1310 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS PRO | Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXUS PRO | The Supreme Edition</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-[#020617] text-white p-4 md:p-8 font-sans">
     
-    <div class="max-w-6xl mx-auto">
-        <h1 class="text-3xl font-black mb-8 text-blue-500 italic uppercase">Boss Control Room</h1>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@400;700;900&display=swap');
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="bg-gray-900/50 p-6 rounded-3xl border border-blue-500/30 shadow-lg">
-                <h2 class="text-xl font-bold mb-6 text-blue-400 flex items-center gap-2">
-                    <i class="fa-solid fa-money-bill-trend-up"></i> Pending Deposits
-                </h2>
-                <div id="depositList" class="space-y-4">
-                    <p class="text-gray-500 italic">Waiting for requests...</p>
+        body { 
+            background: radial-gradient(circle at 50% -20%, #1e3a8a 0%, #0f172a 40%, #020617 100%);
+            color: #fff; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body::before {
+            content: ""; 
+            position: fixed; 
+            inset: 0;
+            background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            background-size: 45px 45px; 
+            z-index: -1;
+        }
+
+        .glass { 
+            background: rgba(255, 255, 255, 0.01); 
+            backdrop-filter: blur(35px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+        }
+        
+        .page-content { 
+            display: none; 
+            height: 82vh; 
+            overflow-y: auto; 
+            padding-bottom: 200px; 
+            scrollbar-width: none; 
+        }
+        
+        .page-content.active { 
+            display: block; 
+            animation: slideUp 0.3s ease-out; 
+        }
+        
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        .battle-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+        }
+        
+        .nav-active { 
+            color: #3b82f6 !important; 
+            filter: drop-shadow(0 0 10px #3b82f6); 
+        }
+        
+        .overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(2, 6, 23, 0.99); 
+            z-index: 5000; 
+            padding: 25px; 
+            overflow-y: auto; 
+        }
+        
+        #gameArena { 
+            z-index: 9999 !important; 
+        }
+        
+        canvas { 
+            background: #020617; 
+            border-radius: 35px; 
+            border: 2px solid #3b82f6; 
+            width: 100%; 
+            max-width: 400px; 
+            display: block; 
+            margin: 0 auto; 
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); 
+        }
+        
+        .nexus-logo { 
+            font-family: 'Syncopate', sans-serif; 
+            letter-spacing: -2px; 
+        }
+        
+        @keyframes ping-slow { 
+            75%, 100% { transform: scale(1.5); opacity: 0; } 
+        }
+        
+        .animate-ping-slow { 
+            animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite; 
+        }
+        
+        .pulse-text { 
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="customAlert" class="fixed inset-0 z-[60000] bg-[#020617]/90 backdrop-blur-md flex flex-col items-center justify-center p-6 transition-opacity duration-300" style="display: none; opacity: 0;">
+        <div id="alertBox" class="glass p-8 rounded-[2.5rem] text-center w-full max-w-sm border-t-4 border-red-500 bg-gradient-to-br from-[#0f172a] to-[#020617] shadow-2xl transform scale-95 transition-transform duration-300">
+            <div id="alertIconContainer" class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30">
+                <i id="alertIcon" class="fa-solid fa-triangle-exclamation text-3xl text-red-500"></i>
+            </div>
+            <h2 id="alertTitle" class="text-2xl font-black italic text-red-500 mb-2 uppercase">Error</h2>
+            <p id="alertMessage" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8 leading-relaxed">Invalid credentials</p>
+            <button id="alertBtn" onclick="closeCustomAlert()" class="w-full bg-red-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-red-500/30 active:scale-95 transition">OKAY</button>
+        </div>
+    </div>
+
+    <div id="tutorialOverlay" class="fixed inset-0 z-[50000] bg-[#020617]/95 backdrop-blur-md flex flex-col items-center justify-center p-6" style="display: none;">
+        <div class="glass p-8 rounded-[2.5rem] w-full max-w-sm border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] relative">
+            <h2 class="text-2xl font-black italic text-blue-500 mb-4 uppercase text-center">How to Play</h2>
+            
+            <div class="w-full h-32 bg-[#020617] rounded-2xl border border-blue-500/30 mb-6 relative overflow-hidden shadow-inner flex justify-center items-center">
+                <canvas id="demoCanvas" width="300" height="120" class="rounded-xl border-none shadow-none"></canvas>
+                <div class="absolute top-2 left-2 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <p class="text-[8px] text-white/80 uppercase font-black tracking-widest">Live Demo</p>
                 </div>
             </div>
 
-            <div class="bg-gray-900/50 p-6 rounded-3xl border border-green-500/30 shadow-lg">
-                <h2 class="text-xl font-bold mb-6 text-green-400 flex items-center gap-2">
-                    <i class="fa-solid fa-building-columns"></i> Pending Withdrawals
-                </h2>
-                <div id="withdrawList" class="space-y-4">
-                    <p class="text-gray-500 italic">Waiting for requests...</p>
+            <div class="space-y-4 mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-500/30">
+                        <i class="fa-solid fa-hand-pointer text-blue-400 text-sm"></i>
+                    </div>
+                    <p class="text-xs font-bold text-gray-300">Tap anywhere on the screen to Jump.</p>
                 </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center border border-red-500/30">
+                        <i class="fa-solid fa-skull text-red-400 text-sm"></i>
+                    </div>
+                    <p class="text-xs font-bold text-gray-300">Avoid Red Obstacles to stay alive.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center border border-yellow-500/30">
+                        <i class="fa-solid fa-clock text-yellow-400 text-sm"></i>
+                    </div>
+                    <p class="text-xs font-bold text-gray-300">Survive for 1 Minute to Win Real Cash.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30">
+                        <i class="fa-solid fa-wallet text-green-400 text-sm"></i>
+                    </div>
+                    <p class="text-[10px] font-bold text-gray-300 leading-tight">Deposit/Bonus balance is for playing. Winnings can be withdrawn instantly!</p>
+                </div>
+            </div>
+            
+            <button onclick="closeTutorial()" class="w-full bg-gray-600 py-4 rounded-2xl text-[11px] font-black uppercase shadow-lg shadow-gray-500/30 active:scale-95 transition">Close Rules</button>
+        </div>
+    </div>
+
+    <div id="authScreen" class="fixed inset-0 z-[10000] bg-[#020617] p-10 flex flex-col justify-center" style="display: none;">
+        <h1 class="text-4xl font-black italic text-blue-500 uppercase mb-4 nexus-logo text-center">NexusPro</h1>
+        <p class="text-[10px] text-gray-500 font-bold uppercase mb-12 italic tracking-widest text-center">Global Battle Arena</p>
+        <div class="space-y-4">
+            <input id="userName" type="text" placeholder="Create / Enter Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
+            <input id="userPwd" type="password" placeholder="Create / Enter Password" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-blue-500 transition-all text-center">
+            <input id="refCode" type="text" placeholder="Referral Code (Optional)" class="w-full bg-green-500/5 border border-green-500/30 rounded-2xl p-5 text-sm font-black italic outline-none focus:border-green-500 transition-all text-center text-green-400 placeholder-green-700/50">
+            <button onclick="loginUser()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-xl shadow-blue-500/30 active:scale-95 transition mt-2">Login / Sign Up</button>
+        </div>
+    </div>
+
+    <div id="mainApp" style="display: none;">
+        <nav class="fixed top-0 inset-x-0 z-[100] glass px-6 py-5 flex justify-between items-center border-b border-white/5">
+            <h1 class="text-xl font-black italic text-blue-500 uppercase tracking-tighter nexus-logo">NexusPro</h1>
+            <div onclick="showPage('wallet')" class="bg-blue-600/10 border border-blue-500/30 px-4 py-2 rounded-2xl flex items-center gap-2 active:scale-95 transition cursor-pointer">
+                <span id="topBal" class="text-xs font-black text-blue-400">₹0.00</span>
+                <div class="bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center shadow-lg"><i class="fa-solid fa-plus text-[8px]"></i></div>
+            </div>
+        </nav>
+
+        <main class="mt-28 px-6">
+            <div id="games" class="page-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-[9px] font-black text-blue-400 tracking-[0.5em] uppercase">Supreme Arena</h2>
+                    <span class="text-[8px] text-green-500 font-bold animate-pulse">● LIVE BATTLES</span>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-blue-500">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 class="text-xl font-black italic uppercase">Cyber Jump</h3>
+                                <p class="text-[9px] text-blue-400 font-bold uppercase tracking-widest leading-none">₹10 Battle • 1 Min</p>
+                            </div>
+                            <i class="fa-solid fa-bolt-lightning text-xl text-blue-500"></i>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="startPractice()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase active:scale-95">Practice</button>
+                            <button onclick="startMatch(10, 5)" class="flex-1 bg-blue-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40 active:scale-95">₹10 Play</button>
+                        </div>
+                    </div>
+
+                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-purple-500">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 class="text-xl font-black italic uppercase text-purple-400">Jump Gold</h3>
+                                <p class="text-[9px] text-gray-500 font-bold uppercase italic tracking-widest leading-none">₹50 Battle • Speed Mode</p>
+                            </div>
+                            <i class="fa-solid fa-crown text-xl text-purple-500"></i>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="startPractice()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase active:scale-95">Practice</button>
+                            <button onclick="startMatch(50, 5)" class="flex-1 bg-purple-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-purple-500/40 active:scale-95">₹50 Play</button>
+                        </div>
+                    </div>
+
+                    <div class="battle-card p-6 rounded-[2.5rem] border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 class="text-xl font-black italic uppercase text-yellow-500">Jump VIP</h3>
+                                <p class="text-[9px] text-gray-500 font-bold uppercase italic tracking-widest leading-none">₹100 Battle • Pro Only</p>
+                            </div>
+                            <i class="fa-solid fa-trophy text-xl text-yellow-500"></i>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="startPractice()" class="flex-1 glass py-4 rounded-2xl text-[10px] font-black uppercase active:scale-95">Practice</button>
+                            <button onclick="startMatch(100, 5)" class="flex-1 bg-yellow-600 py-4 rounded-2xl text-[10px] font-black uppercase text-black shadow-lg shadow-yellow-500/40 active:scale-95">₹100 Play</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wallet" class="page-content text-center">
+                <div class="glass p-12 rounded-[3.5rem] mb-8 border-b-4 border-blue-500 bg-gradient-to-br from-blue-900/10 to-transparent relative">
+                    <p class="text-[10px] text-gray-500 font-black uppercase mb-2 tracking-widest">Total Balance</p>
+                    <h1 id="wallBal" class="text-5xl font-black italic tracking-tighter mb-6 text-white">₹0.00</h1>
+                    
+                    <div class="bg-black/30 border border-white/5 rounded-2xl p-4 mb-2 flex justify-between items-center">
+                        <span class="text-[9px] text-gray-400 font-bold uppercase">Deposit / Bonus:</span>
+                        <span id="bonusBalDisplay" class="text-sm font-black text-yellow-500 italic">₹0.00</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex justify-between items-center shadow-inner">
+                        <span class="text-[10px] text-white font-black uppercase">Withdrawable Winnings:</span>
+                        <span id="winBalDisplay" class="text-lg font-black text-green-400 italic drop-shadow-[0_0_10px_rgba(74,222,128,0.5)]">₹0.00</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <button onclick="openOverlay('depositOverlay')" class="bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs shadow-2xl">Add Cash</button>
+                    <button onclick="openOverlay('withdrawOverlay')" class="glass py-6 rounded-[2rem] font-black uppercase text-xs">Withdraw</button>
+                </div>
+                <div class="glass p-5 rounded-2xl flex gap-3">
+                    <input id="promoCode" type="text" placeholder="Promo Code (e.g. ADD50-A)" class="flex-1 bg-transparent outline-none text-xs font-bold uppercase italic px-2">
+                    <button onclick="redeemCode()" class="bg-blue-500 px-6 py-2 rounded-xl text-[10px] font-black">REDEEM</button>
+                </div>
+            </div>
+
+            <div id="vip" class="page-content">
+                <div class="battle-card p-8 rounded-[3.5rem] mb-6 border-l-4 border-yellow-500" onclick="handleAdminClick()">
+                    <div class="flex items-center gap-5">
+                        <div class="w-16 h-16 bg-yellow-500 rounded-2xl flex items-center justify-center text-3xl shadow-xl shadow-yellow-500/30">
+                            <i class="fa-solid fa-crown text-black"></i>
+                        </div>
+                        <div>
+                            <h2 id="userDisplay" class="text-2xl font-black italic uppercase">Gamer</h2>
+                            <p class="text-[10px] text-yellow-500 font-black uppercase tracking-widest">Elite Member</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div onclick="openTutorial()" class="glass p-6 rounded-3xl mb-6 border border-blue-500/30 flex items-center justify-between active:scale-95 transition cursor-pointer bg-gradient-to-r from-blue-900/20 to-transparent">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-500/50">
+                            <i class="fa-solid fa-circle-play text-blue-400"></i>
+                        </div>
+                        <span class="text-xs font-black text-white uppercase italic tracking-wider">How to Play / Rules</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-500"></i>
+                </div>
+
+                <div class="glass p-8 rounded-[3rem] mb-6 border-l-4 border-green-500 bg-gradient-to-br from-green-900/10 to-transparent">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-black italic uppercase text-green-400">Refer & Earn</h3>
+                            <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">Get ₹10 Per Friend</p>
+                        </div>
+                        <i class="fa-solid fa-users text-xl text-green-500"></i>
+                    </div>
+                    
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex justify-between items-center mb-4">
+                        <span class="text-[10px] text-gray-500 font-black uppercase">Your Code:</span>
+                        <span id="myRefCode" class="text-sm font-black text-white italic tracking-widest"></span>
+                    </div>
+
+                    <button onclick="shareReferral()" class="w-full bg-green-600 py-4 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-green-500/30 active:scale-95 transition flex justify-center items-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> Share on WhatsApp
+                    </button>
+                </div>
+
+                <button onclick="logout()" class="w-full glass py-5 rounded-2xl text-[10px] font-black uppercase text-red-500 active:scale-95">Logout Account</button>
+            </div>
+        </main>
+
+        <footer class="fixed bottom-0 inset-x-0 glass px-12 py-7 flex justify-between items-center z-[150] rounded-t-[3.5rem] border-t border-white/5">
+            <button onclick="showPage('games')" class="nav-btn flex flex-col items-center gap-1 nav-active transition">
+                <i class="fa-solid fa-gamepad text-2xl"></i>
+                <span class="text-[7px] font-black uppercase tracking-widest">Arena</span>
+            </button>
+            <button onclick="showPage('wallet')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition">
+                <i class="fa-solid fa-wallet text-2xl"></i>
+                <span class="text-[7px] font-black uppercase tracking-widest">Wallet</span>
+            </button>
+            <button onclick="showPage('vip')" class="nav-btn flex flex-col items-center gap-1 text-gray-500 transition">
+                <i class="fa-solid fa-user text-2xl"></i>
+                <span class="text-[7px] font-black uppercase tracking-widest">Account</span>
+            </button>
+        </footer>
+    </div>
+
+    <div id="matchmakingOverlay" class="fixed inset-0 z-[20000] bg-[#020617]/95 backdrop-blur-sm flex flex-col items-center justify-center p-6" style="display: none;">
+        <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border border-blue-500/30 shadow-[0_0_50px_rgba(59,130,246,0.15)] flex flex-col items-center justify-center">
+            <div id="searchRadar" class="relative w-28 h-28 mx-auto mb-8 flex items-center justify-center">
+                <div class="absolute inset-0 border-2 border-blue-500/30 rounded-full animate-ping-slow"></div>
+                <div class="absolute inset-2 border-2 border-blue-400/50 rounded-full animate-pulse"></div>
+                <div class="absolute inset-4 bg-blue-500/10 rounded-full"></div>
+                <i class="fa-solid fa-crosshairs text-4xl text-blue-400"></i>
+            </div>
+            <div id="oppFoundInfo" class="hidden mb-8 w-full">
+                <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg shadow-red-500/50 border-2 border-white/20">
+                    <i class="fa-solid fa-user-ninja text-3xl text-white"></i>
+                </div>
+                <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1">Opponent</p>
+                <h3 id="fakeOpponentId" class="text-2xl font-black italic text-red-400">GamerXXXX</h3>
+            </div>
+            <h2 id="matchmakingTitle" class="text-2xl font-black italic text-white mb-2 uppercase tracking-widest pulse-text">Scanning...</h2>
+            <p id="matchmakingSub" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-6">Locating active players</p>
+            <div id="matchTimerContainer" class="bg-[#0f172a] border border-blue-500/20 rounded-2xl px-8 py-3 inline-block shadow-inner">
+                <p id="searchTimer" class="text-2xl font-black text-blue-400 italic">10s</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="countdownOverlay" class="fixed inset-0 z-[25000] bg-[#020617]/95 backdrop-blur-md flex flex-col items-center justify-center" style="display: none;">
+        <h1 id="countdownText" class="text-[150px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-800 drop-shadow-[0_0_30px_rgba(59,130,246,0.8)] leading-none transition-transform duration-200">3</h1>
+        <p class="text-xs text-blue-400 font-bold uppercase tracking-[0.5em] mt-8 animate-pulse">Get Ready</p>
+    </div>
+
+    <div id="offlineOverlay" class="fixed inset-0 z-[30000] bg-red-900/95 flex flex-col items-center justify-center p-6" style="display: none; backdrop-filter: blur(10px);">
+        <i class="fa-solid fa-wifi-slash text-6xl text-white mb-6 animate-pulse"></i>
+        <h2 class="text-4xl font-black italic text-white mb-2 uppercase text-center tracking-tighter">NO INTERNET</h2>
+        <p class="text-xs font-bold text-white/80 uppercase tracking-widest text-center mt-2 max-w-xs leading-relaxed">Please turn on your Wi-Fi or Mobile Data to continue playing securely!</p>
+    </div>
+
+    <div id="gameArena" class="overlay" style="display: none;">
+        <div class="flex flex-col min-h-full px-4 pt-10">
+            <div class="flex justify-between items-center mb-6 w-full max-w-md mx-auto relative z-[99999]">
+                <div class="glass px-6 py-2 rounded-xl border-blue-500/40">
+                    <span id="timer" class="text-xl font-black text-white">01:00</span>
+                </div>
+                <div class="glass px-6 py-2 rounded-xl border-blue-500/40">
+                    <span id="liveScore" class="text-xl font-black text-blue-500">0</span>
+                </div>
+                <button onclick="returnToArena()" ontouchstart="returnToArena(); event.stopPropagation();" class="bg-red-500/20 text-red-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase border border-red-500/30 active:scale-95 cursor-pointer relative z-[99999]">QUIT</button>
+            </div>
+            <canvas id="mainCanvas"></canvas>
+            <p class="text-center mt-8 text-[10px] text-gray-500 uppercase tracking-widest font-black">Tap the Canvas to Jump</p>
+        </div>
+    </div>
+
+    <div id="resultOverlay" class="overlay z-[10000]" style="display: none;">
+        <div class="flex flex-col items-center justify-center min-h-full p-6">
+            <div class="glass p-10 rounded-[3rem] text-center w-full max-w-sm border-t-4 border-blue-500 bg-gradient-to-br from-[#020617] to-blue-900/20 relative z-[99999]">
+                <h2 id="resTitle" class="text-4xl font-black italic text-green-500 mb-2 uppercase">VICTORY</h2>
+                <p id="resMessage" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-8">You won ₹0.00</p>
+                <div class="flex justify-between items-center bg-white/5 rounded-2xl p-6 mb-8 border border-white/10">
+                    <div class="text-center">
+                        <p class="text-[8px] text-gray-500 font-black uppercase mb-1">Your Score</p>
+                        <h3 id="resYourScore" class="text-3xl font-black text-white italic">0</h3>
+                    </div>
+                    <div class="w-px h-12 bg-white/10"></div>
+                    <div class="text-center">
+                        <p class="text-[8px] text-gray-500 font-black uppercase mb-1">Opponent</p>
+                        <h3 id="resOppScore" class="text-3xl font-black text-gray-400 italic">0</h3>
+                    </div>
+                </div>
+                <button onclick="returnToArena()" ontouchstart="returnToArena(); event.stopPropagation();" class="w-full bg-blue-600 py-5 rounded-2xl text-[10px] font-black uppercase shadow-lg shadow-blue-500/40 active:scale-95 transition cursor-pointer relative z-[99999]">Back to Arena</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="depositOverlay" class="overlay" style="display: none;">
+        <div class="flex flex-col min-h-full p-6 justify-center">
+            <div class="flex justify-between items-center mb-10 w-full max-w-sm mx-auto">
+                <h2 class="text-2xl font-black italic text-blue-500 uppercase">Deposit</h2>
+                <button onclick="closeOverlay('depositOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            
+            <div class="glass p-8 rounded-[3rem] text-center border border-blue-500/30 mb-6 w-full max-w-sm mx-auto bg-gradient-to-br from-blue-900/10 to-[#020617]">
+                <p class="text-[10px] text-gray-400 font-black uppercase mb-6 tracking-widest">Step 1: Pay Securely</p>
+                
+                <a href="upi://pay?pa=Nexuspro@ptaxis&pn=NexusPro&cu=INR" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase text-xs shadow-lg shadow-blue-500/40 active:scale-95 transition flex items-center justify-center gap-3 mb-8">
+                    <i class="fa-solid fa-bolt"></i> Open UPI App (GPay/PhonePe)
+                </a>
+
+                <div class="w-full h-px bg-white/10 mb-8 relative">
+                    <span class="absolute left-1/2 -top-2.5 -translate-x-1/2 bg-[#020617] px-3 text-[10px] text-gray-500 font-bold uppercase">OR</span>
+                </div>
+
+                <p class="text-[10px] text-gray-400 font-black uppercase mb-4 tracking-widest">Step 2: Verify Payment</p>
+                <div class="space-y-4">
+                    <input id="depUtr" type="number" placeholder="Enter 12-Digit UTR Number" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none text-center focus:border-blue-500 transition-colors">
+                    <input id="depAmt" type="number" placeholder="Amount Sent (Min ₹50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none text-center focus:border-blue-500 transition-colors">
+                    <button onclick="submitDepositUtr()" class="w-full bg-green-600 py-5 rounded-2xl font-black uppercase text-xs shadow-lg shadow-green-500/30 active:scale-95 transition">Submit UTR</button>
+                </div>
+            </div>
+            
+            <p class="text-[9px] text-gray-500 font-bold uppercase text-center mt-2 w-full max-w-sm mx-auto">Balance will be updated automatically after verification.</p>
+        </div>
+    </div>
+
+    <div id="withdrawOverlay" class="overlay" style="display: none;">
+        <div class="flex flex-col min-h-full p-6 justify-center w-full max-w-sm mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black italic text-blue-500 uppercase">Withdraw</h2>
+                <button onclick="closeOverlay('withdrawOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            
+            <div class="glass p-4 rounded-2xl mb-6 text-center border border-green-500/30">
+                <p class="text-[9px] text-gray-400 font-bold uppercase mb-1">Withdrawable Balance</p>
+                <h3 id="withModalBal" class="text-2xl font-black text-green-400 italic">₹0.00</h3>
+            </div>
+
+            <div class="space-y-6">
+                <input id="withUpi" type="text" placeholder="Enter UPI ID (e.g. name@paytm)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none text-center">
+                <input id="withAmt" type="number" placeholder="Amount (Min ₹50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-black italic outline-none text-center">
+                <button onclick="processWithdraw()" class="w-full bg-blue-600 py-6 rounded-3xl font-black uppercase text-xs shadow-lg shadow-blue-500/40 active:scale-95 transition">Request Payout</button>
+                <p class="text-[9px] text-gray-500 font-bold uppercase text-center mt-4">Note: Only Winnings can be withdrawn.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminOverlay" class="overlay" style="display: none;">
+        <div class="flex flex-col min-h-full p-6 justify-center w-full max-w-sm mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black italic text-red-500 uppercase">Admin Power</h2>
+                <button onclick="closeOverlay('adminOverlay')"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            
+            <div class="glass p-6 rounded-3xl border border-blue-500/30 mb-6 bg-blue-900/10">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Verify Payout Request</p>
+                <input id="verifyWdCode" type="text" placeholder="Paste WD- Code Here" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-blue-500 text-center mb-4">
+                <button onclick="verifyWithdrawal()" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase text-[10px] shadow-lg">Verify & Mark Paid</button>
+            </div>
+
+            <div class="glass p-6 rounded-3xl border border-red-500/30 mb-6">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Generate Secure Promo Code</p>
+                <input id="genAmt" type="number" placeholder="Amount (e.g. 50)" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
+                <button onclick="generatePromo()" class="w-full bg-red-600 py-4 rounded-xl font-black uppercase text-[10px]">Create Code</button>
+                <div class="mt-4 text-center">
+                    <p id="generatedCode" class="text-xl font-black text-green-400 tracking-widest uppercase"></p>
+                </div>
+            </div>
+
+            <div class="glass p-6 rounded-3xl">
+                <p class="text-[10px] text-gray-400 font-bold uppercase mb-4 text-center">Direct Winnings Update (Admin)</p>
+                <input id="adminUser" type="text" placeholder="Target Gamer ID" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
+                <input id="adminAmt" type="number" placeholder="New Winning Balance" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-black italic outline-none focus:border-red-500 text-center mb-4">
+                <button onclick="setBalance()" class="w-full bg-yellow-600 text-black py-4 rounded-xl font-black uppercase text-[10px]">Update Winnings Balance</button>
             </div>
         </div>
     </div>
 
     <script>
-        // TERI FIREBASE KEYS
+        // 🚀 FIREBASE SETUP 🚀
         const firebaseConfig = {
             apiKey: "AIzaSyBtJQ79z9JRKsFHO8_1NV1T2PZZcBC-gyc",
             authDomain: "nexuspro-c74a4.firebaseapp.com",
             projectId: "nexuspro-c74a4",
             storageBucket: "nexuspro-c74a4.firebasestorage.app",
             messagingSenderId: "324638680474",
-            appId: "1:324638680474:web:2ad8bc60a0445d7f49c623"
+            appId: "1:324638680474:web:2ad8bc60a0445d7f49c623",
+            measurementId: "G-RW1RH9JH82"
         };
+        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 1. LISTEN TO DEPOSITS
-        db.collection('deposits').where('status', '==', 'pending').onSnapshot(snapshot => {
-            const list = document.getElementById('depositList'); 
-            if(snapshot.empty) { list.innerHTML = "<p class='text-gray-500 italic'>No pending deposits.</p>"; return; }
-            list.innerHTML = "";
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                list.innerHTML += `
-                    <div class="bg-black/40 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border border-white/5 gap-4">
-                        <div>
-                            <p class="font-black text-white text-lg">${data.userId}</p>
-                            <p class="text-sm text-yellow-400 font-bold tracking-widest mt-1">UTR: ${data.utr}</p>
-                            <p class="text-sm text-gray-400 mt-1">Amount: <span class="text-white font-bold">₹${data.amount}</span></p>
-                        </div>
-                        <button onclick="approveDep('${doc.id}', '${data.userId}', ${data.amount})" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-xs font-black uppercase transition-colors shadow-lg shadow-blue-500/20">
-                            Approve ₹${data.amount}
-                        </button>
-                    </div>
-                `;
-            });
-        });
-
-        // 2. LISTEN TO WITHDRAWALS
-        db.collection('withdrawals').where('status', '==', 'pending').onSnapshot(snapshot => {
-            const list = document.getElementById('withdrawList'); 
-            if(snapshot.empty) { list.innerHTML = "<p class='text-gray-500 italic'>No pending withdrawals.</p>"; return; }
-            list.innerHTML = "";
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                list.innerHTML += `
-                    <div class="bg-black/40 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center border border-white/5 gap-4">
-                        <div>
-                            <p class="font-black text-white text-lg">${data.userId}</p>
-                            <p class="text-sm text-green-400 font-bold tracking-widest mt-1">UPI: ${data.upi}</p>
-                            <p class="text-sm text-gray-400 mt-1">Amount to Pay: <span class="text-white font-bold">₹${data.amount}</span></p>
-                        </div>
-                        <button onclick="approveWith('${doc.id}')" class="w-full md:w-auto bg-green-600 hover:bg-green-500 px-6 py-3 rounded-xl text-xs font-black uppercase transition-colors shadow-lg shadow-green-500/20">
-                            Mark Paid
-                        </button>
-                    </div>
-                `;
-            });
-        });
-
-        // ACTION BUTTONS
-        async function approveDep(docId, userId, amt) {
-            const confirmApprove = confirm(`kya sach mein ${userId} ko ₹${amt} dene hain? (Bank me UTR check kar liya?)`);
-            if(!confirmApprove) return;
+        // --- CUSTOM ALERT LOGIC ---
+        function showCustomAlert(title, msg, type='error') {
+            const alertOverlay = document.getElementById('customAlert');
+            const alertBox = document.getElementById('alertBox');
+            const icon = document.getElementById('alertIcon');
+            const titleEl = document.getElementById('alertTitle');
             
-            // Increment Bonus Balance
-            await db.collection('users').doc(userId).set({ 
-                bonusBal: firebase.firestore.FieldValue.increment(amt) 
-            }, { merge: true });
+            alertOverlay.style.display = 'flex';
+            void alertOverlay.offsetWidth;
+            alertOverlay.style.opacity = '1';
+            alertBox.style.transform = 'scale(1)';
             
-            // Mark request as approved
-            await db.collection('deposits').doc(docId).update({ status: 'approved' });
-            alert(`Boom! ₹${amt} added to ${userId}'s account.`);
+            titleEl.innerText = title;
+            document.getElementById('alertMessage').innerText = msg;
+            
+            if(type === 'error') {
+                alertBox.className = "glass p-8 rounded-[2.5rem] text-center w-full max-w-sm border-t-4 border-red-500 bg-gradient-to-br from-[#0f172a] to-[#020617] shadow-[0_0_40px_rgba(239,68,68,0.2)] transform scale-100 transition-transform duration-300";
+                icon.className = "fa-solid fa-triangle-exclamation text-3xl text-red-500";
+                document.getElementById('alertIconContainer').className = "w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/30";
+                titleEl.className = "text-2xl font-black italic text-red-500 mb-2 uppercase";
+            } else if(type === 'success') {
+                alertBox.className = "glass p-8 rounded-[2.5rem] text-center w-full max-w-sm border-t-4 border-green-500 bg-gradient-to-br from-[#0f172a] to-[#020617] shadow-[0_0_40px_rgba(34,197,94,0.2)] transform scale-100 transition-transform duration-300";
+                icon.className = "fa-solid fa-check text-3xl text-green-500";
+                document.getElementById('alertIconContainer').className = "w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/30";
+                titleEl.className = "text-2xl font-black italic text-green-500 mb-2 uppercase";
+            } else {
+                alertBox.className = "glass p-8 rounded-[2.5rem] text-center w-full max-w-sm border-t-4 border-yellow-500 bg-gradient-to-br from-[#0f172a] to-[#020617] shadow-[0_0_40px_rgba(234,179,8,0.2)] transform scale-100 transition-transform duration-300";
+                icon.className = "fa-solid fa-lock text-3xl text-yellow-500";
+                document.getElementById('alertIconContainer').className = "w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-yellow-500/30";
+                titleEl.className = "text-2xl font-black italic text-yellow-500 mb-2 uppercase";
+            }
+        }
+        
+        function closeCustomAlert() {
+            const alertOverlay = document.getElementById('customAlert');
+            const alertBox = document.getElementById('alertBox');
+            alertOverlay.style.opacity = '0';
+            alertBox.style.transform = 'scale(0.9)';
+            setTimeout(() => { alertOverlay.style.display = 'none'; }, 300);
         }
 
-        async function approveWith(docId) {
-            const confirmWith = confirm(`Kya tune sach mein apna bank se isko paise bhej diye hain?`);
-            if(!confirmWith) return;
+        // --- LIVE AI DEMO TUTORIAL LOGIC ---
+        let demoPlaying = false;
+        function openTutorial() {
+            document.getElementById('tutorialOverlay').style.display = 'flex';
+            startLiveDemo();
+        }
+
+        function startLiveDemo() {
+            const canvas = document.getElementById('demoCanvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            demoPlaying = true;
             
-            await db.collection('withdrawals').doc(docId).update({ status: 'paid' });
-            alert("Done! Payout complete.");
+            let p = { y: 80, dy: 0, w: 20, h: 20 };
+            let obs = [];
+            
+            function drawDemo() {
+                if(!demoPlaying) return;
+                ctx.clearRect(0,0,canvas.width, canvas.height);
+                
+                p.dy += 0.8;
+                p.y += p.dy;
+                if(p.y > 80) p.y = 80;
+                
+                ctx.fillStyle = '#3b82f6';
+                ctx.fillRect(40, p.y, p.w, p.h);
+                
+                let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
+                if(lastDist > 120 && Math.random() < 0.03) {
+                    obs.push({ x: canvas.width, w: 15, h: 25 });
+                }
+                
+                for(let i=obs.length-1; i>=0; i--) {
+                    let o = obs[i];
+                    o.x -= 3;
+                    ctx.fillStyle = '#ff4444';
+                    ctx.fillRect(o.x, 75, o.w, o.h);
+                    
+                    if(o.x > 40 && o.x < 90 && p.y >= 80) { 
+                        p.dy = -10; 
+                    }
+                    if(o.x + o.w < 0) {
+                        obs.splice(i, 1);
+                    }
+                }
+                requestAnimationFrame(drawDemo);
+            }
+            drawDemo();
+        }
+
+        function closeTutorial() {
+            demoPlaying = false; 
+            document.getElementById('tutorialOverlay').style.display = 'none';
+        }
+
+        // --- OFFLINE/ONLINE DETECTION ---
+        window.addEventListener('offline', () => { 
+            document.getElementById('offlineOverlay').style.display = 'flex'; 
+        });
+        window.addEventListener('online', () => { 
+            document.getElementById('offlineOverlay').style.display = 'none'; 
+        });
+
+        // --- AUDIO ENGINE ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(freq, type, duration) {
+            try {
+                if(audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                
+                gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        // --- GLOBAL VARIABLES ---
+        let adminClicks = 0;
+        let isPlaying = false;
+        let gameTimerInt = null;
+        let matchSearchInt = null;
+        let matchTimeout = null;
+
+        const naturalNames = [
+            "Rahul", "Aman", "Priya", "Vikash", "Rohit", "Sneha", "Karan", "Ritik", "Neha", "Shivam", 
+            "Ajay", "Deepak", "Ravi", "Sandeep", "Nisha", "Raju", "Amit", "Pooja", "Gaurav", "Sunil", 
+            "Manish", "Ankit", "Saurabh", "Vishal", "Akash", "Pankaj", "Vikas", "Rahul_Pro", "Aman_007", 
+            "King_Kohli", "Mahi_Fan", "Rocky", "Abhishek", "Harsh", "Sachin", "Dinesh", "Suresh", "Ramesh", 
+            "Komal", "Jyoti", "Prince", "Aryan", "Yash", "Tushar", "Suraj", "Nitin", "Tarun", "Mohit", 
+            "Kapil", "Lucky_Boy", "Chhotu", "Rajput_Boy", "Devil", "Ninja", "Avinash", "Sumit", "Raj"
+        ];
+
+        // --- AUTH & INITIALIZATION ---
+        function loginUser() {
+            const user = document.getElementById('userName').value.trim();
+            const pwd = document.getElementById('userPwd').value.trim();
+            const refCode = document.getElementById('refCode').value.trim();
+            
+            if(!user) {
+                return showCustomAlert("ID Required", "Bhai, Gamer ID daalna zaroori hai!", "error");
+            }
+            if(!pwd) {
+                return showCustomAlert("Password Required", "Password daalna zaroori hai!", "error");
+            }
+
+            const savedPwd = localStorage.getItem(user + '_pwd');
+            const deviceUsed = localStorage.getItem('device_bonus_claimed');
+
+            if(localStorage.getItem(user + '_bal') && !localStorage.getItem(user + '_bonus_bal') && !localStorage.getItem(user + '_win_bal')) {
+                localStorage.setItem(user + '_bonus_bal', localStorage.getItem(user + '_bal'));
+                localStorage.setItem(user + '_win_bal', '0.00');
+            }
+
+            const existingBonusBal = localStorage.getItem(user + '_bonus_bal');
+
+            if(savedPwd) {
+                if(savedPwd !== pwd) {
+                    return showCustomAlert("Access Denied", "Wrong Password! Ya toh password galat hai, ya ye ID kisi aur ne le rakhi hai.", "error");
+                }
+                localStorage.setItem('nexus_active', user);
+                location.reload();
+                return;
+            }
+
+            localStorage.setItem(user + '_pwd', pwd);
+            localStorage.setItem('nexus_active', user);
+            
+            if(!existingBonusBal) {
+                localStorage.setItem(user + '_win_bal', '0.00'); 
+                if(refCode) {
+                    if(deviceUsed === 'true') {
+                        localStorage.setItem(user + '_bonus_bal', '0.00'); 
+                        showCustomAlert("Security System", "Ek Device pe sirf ek baar ₹10 Bonus milta hai! Account created without bonus.", "warning");
+                        setTimeout(() => { location.reload(); }, 2500);
+                        return;
+                    } else {
+                        localStorage.setItem(user + '_bonus_bal', '10.00'); 
+                        localStorage.setItem('device_bonus_claimed', 'true');
+                        showCustomAlert("Success", "Referral Code Applied! ₹10 Bonus Added. (Play to Convert to Winnings)", "success");
+                        setTimeout(() => { location.reload(); }, 2500);
+                        return;
+                    }
+                } else {
+                    localStorage.setItem(user + '_bonus_bal', '0.00');
+                }
+            }
+            location.reload();
+        }
+
+        window.onload = () => {
+            const user = localStorage.getItem('nexus_active');
+            if(!user) {
+                document.getElementById('authScreen').style.display = 'flex';
+            } else {
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('userDisplay').innerText = user;
+                document.getElementById('myRefCode').innerText = user.toUpperCase();
+                
+                if(localStorage.getItem(user + '_bal') && !localStorage.getItem(user + '_bonus_bal')) {
+                    localStorage.setItem(user + '_bonus_bal', localStorage.getItem(user + '_bal'));
+                    localStorage.setItem(user + '_win_bal', '0.00');
+                }
+                updateUI();
+                listenToFirebaseBalance(user);
+            }
+        }
+
+        // 🚀 FIREBASE REAL-TIME LISTENER 🚀
+        function listenToFirebaseBalance(user) {
+            db.collection('users').doc(user).onSnapshot((doc) => {
+                if(doc.exists) {
+                    const data = doc.data();
+                    if(data.bonusBal !== undefined) {
+                        localStorage.setItem(user + '_bonus_bal', data.bonusBal.toFixed(2));
+                    }
+                    if(data.winBal !== undefined) {
+                        localStorage.setItem(user + '_win_bal', data.winBal.toFixed(2));
+                    }
+                    updateUI();
+                }
+            });
+        }
+
+        function updateUI() {
+            const user = localStorage.getItem('nexus_active');
+            const bonusBal = parseFloat(localStorage.getItem(user + '_bonus_bal') || '0.00');
+            const winBal = parseFloat(localStorage.getItem(user + '_win_bal') || '0.00');
+            
+            const totalBal = (bonusBal + winBal).toFixed(2);
+            
+            document.getElementById('topBal').innerText = "₹" + totalBal;
+            document.getElementById('wallBal').innerText = "₹" + totalBal;
+            
+            document.getElementById('bonusBalDisplay').innerText = "₹" + bonusBal.toFixed(2);
+            document.getElementById('winBalDisplay').innerText = "₹" + winBal.toFixed(2);
+            document.getElementById('withModalBal').innerText = "₹" + winBal.toFixed(2); 
+        }
+
+        // --- FIREBASE DEPOSIT / WITHDRAWAL SUBMISSION (FIXED DUPLICATES & UI) ---
+        async function submitDepositUtr() {
+            const utr = document.getElementById('depUtr').value.trim();
+            const amtStr = document.getElementById('depAmt').value.trim();
+            const amt = parseInt(amtStr);
+            const user = localStorage.getItem('nexus_active');
+            
+            const btn = event.currentTarget || event.target;
+
+            if(utr.length < 10) {
+                return showCustomAlert("Invalid UTR", "Sahi 12-digit UTR number daalein!", "error");
+            }
+            if(isNaN(amt) || amt < 50) {
+                return showCustomAlert("Invalid Amount", "Minimum deposit ₹50 hai!", "error");
+            }
+
+            // Lock Button & UI Instant Feedback
+            const originalText = btn.innerText;
+            btn.innerText = "PROCESSING...";
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            if(db) {
+                try {
+                    // 1. Check if UTR is already in database
+                    const utrCheck = await db.collection('deposits').where('utr', '==', utr).get();
+                    
+                    if (!utrCheck.empty) {
+                        // UTR already exists!
+                        showCustomAlert("Duplicate UTR", "Bhai chaalaki mat kar, ye UTR pehle hi submit ho chuka hai!", "error");
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        return; 
+                    }
+
+                    // 2. If it is new, save it to database
+                    await db.collection('deposits').add({
+                        userId: user,
+                        utr: utr,
+                        amount: amt,
+                        status: 'pending',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    showCustomAlert("Verifying Payment", "Processing... Balance will be added in 1-2 minutes.", "success");
+                    document.getElementById('depUtr').value = '';
+                    document.getElementById('depAmt').value = '';
+                    closeOverlay('depositOverlay');
+                    
+                } catch(err) {
+                    showCustomAlert("Network Error", "Database rules check karein ya internet connect karein.", "error");
+                } finally {
+                    // Unlock button
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            } else {
+                showCustomAlert("Database Error", "Firebase connect nahi hai abhi.", "error");
+                btn.innerText = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function processWithdraw() {
+            const upi = document.getElementById('withUpi').value.trim();
+            const amtStr = document.getElementById('withAmt').value.trim();
+            const amt = parseInt(amtStr); 
+            const user = localStorage.getItem('nexus_active');
+            let winBal = parseFloat(localStorage.getItem(user + '_win_bal') || '0.00');
+
+            const hasDeposited = localStorage.getItem(user + '_has_deposited') === 'true';
+            if (!hasDeposited) { 
+                return showCustomAlert("Security Lock", "Withdrawal unlock karne ke liye pehle Cash Add karein!", "warning"); 
+            }
+
+            if (!upi) {
+                return showCustomAlert("Invalid Input", "Bhai, apna UPI ID toh daal!", "error");
+            }
+            if (isNaN(amt) || amt < 50) {
+                return showCustomAlert("Limit Error", "Minimum withdrawal ₹50 hai mere bhai!", "error");
+            }
+            if (amt > winBal) {
+                return showCustomAlert("Withdrawal Rejected", `Tere Withdrawable Winnings mein sirf ₹${winBal.toFixed(2)} hain.`, "warning");
+            }
+            
+            winBal -= amt;
+            localStorage.setItem(user + '_win_bal', winBal.toFixed(2));
+            
+            // Deduct immediately in Firebase
+            db.collection('users').doc(user).set({ winBal: winBal }, { merge: true });
+            updateUI();
+            
+            const rand = Math.floor(1000 + Math.random() * 9000);
+            const secretHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
+            const wdCode = `WD-${amt}-${rand}-${secretHash}`;
+            
+            closeOverlay('withdrawOverlay');
+            document.getElementById('withUpi').value = '';
+            document.getElementById('withAmt').value = '';
+            
+            db.collection('withdrawals').add({ 
+                userId: user, 
+                upi: upi, 
+                amount: amt, 
+                code: wdCode, 
+                status: 'pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                showCustomAlert("Withdrawal Processing", "Payment request sent to bank. Check after 5-10 mins.", "success");
+            });
+        }
+
+        function shareReferral() {
+            const user = localStorage.getItem('nexus_active');
+            const text = `Bhai! Nexus Pro pe aaja khelne. Signup karte waqt mera Referral Code daal: *${user.toUpperCase()}* aur ₹10 FREE Bonus le!\n\nLink: ${window.location.href}`;
+            window.location.href = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        }
+
+        // --- ADMIN / PROMO CODE LOGIC ---
+        function verifyWithdrawal() {
+            const code = document.getElementById('verifyWdCode').value.toUpperCase().trim();
+            if(!code) return showCustomAlert("Error", "Code daalo bhai!", "error");
+            let paidCodes = JSON.parse(localStorage.getItem('admin_paid_codes') || '[]');
+            if(paidCodes.includes(code)) return showCustomAlert("Scam Alert", "Ye code pehle hi pay ho chuka hai.", "error");
+            const parts = code.split('-');
+            if(parts.length !== 4 || parts[0] !== 'WD') return showCustomAlert("Format Error", "Invalid Format! Code Fake hai.", "error");
+            const amt = parseInt(parts[1]); const rand = parseInt(parts[2]); const providedHash = parseInt(parts[3]);
+            if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return showCustomAlert("Format Error", "Invalid Code!", "error");
+            const expectedHash = ((amt * 31) + (rand * 43)) % 8999 + 1000;
+            if(providedHash === expectedHash) {
+                showCustomAlert("Genuine Request", `Amount: ₹${amt}\nUser ne Winnings withdraw kiye hain. GPay kar do.`, "success");
+                paidCodes.push(code); localStorage.setItem('admin_paid_codes', JSON.stringify(paidCodes));
+                document.getElementById('verifyWdCode').value = '';
+            } else { 
+                showCustomAlert("Fake Code", "FAKE CODE! Payment mat karna!", "error"); 
+            }
+        }
+
+        function generatePromo() {
+            const amtStr = document.getElementById('genAmt').value;
+            if(!amtStr || amtStr <= 0) return showCustomAlert("Input Error", "Enter valid amount!", "error");
+            const amt = parseInt(amtStr);
+            const rand = Math.floor(1000 + Math.random() * 9000);
+            const secretHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
+            const finalCode = `NX${amt}-${rand}-${secretHash}`;
+            document.getElementById('generatedCode').innerText = finalCode;
+        }
+
+        function redeemCode() {
+            const code = document.getElementById('promoCode').value.toUpperCase().trim();
+            const user = localStorage.getItem('nexus_active');
+            let bonusBal = parseFloat(localStorage.getItem(user + '_bonus_bal') || '0.00');
+            let usedCodes = JSON.parse(localStorage.getItem(user + '_used_codes') || '[]');
+            
+            if(usedCodes.includes(code)) return showCustomAlert("Alert", "Chalaki mat kar bhai! Ye code pehle hi use ho chuka hai.", "error");
+            const parts = code.split('-');
+            if(parts.length !== 3 || !parts[0].startsWith('NX')) return showCustomAlert("Error", "Invalid or Fake Code!", "error");
+            
+            const amt = parseInt(parts[0].replace('NX', '')); const rand = parseInt(parts[1]); const providedHash = parseInt(parts[2]);
+            if(isNaN(amt) || isNaN(rand) || isNaN(providedHash)) return showCustomAlert("Error", "Invalid Code!", "error");
+            const expectedHash = ((amt * 17) + (rand * 23)) % 8999 + 1000;
+            
+            if(providedHash === expectedHash) {
+                localStorage.setItem(user + '_bonus_bal', (bonusBal + amt).toFixed(2));
+                usedCodes.push(code); 
+                localStorage.setItem(user + '_used_codes', JSON.stringify(usedCodes));
+                localStorage.setItem(user + '_has_deposited', 'true');
+                
+                db.collection('users').doc(user).set({ bonusBal: bonusBal + amt }, { merge: true });
+                
+                showCustomAlert("Deposit Success", `₹${amt} Added to Deposit Wallet!\n\nPlay matches to convert it to Winnings!`, "success"); 
+                updateUI(); 
+                document.getElementById('promoCode').value = '';
+            } else { 
+                showCustomAlert("Security Alert", "Fake Code Detected! System Alert Triggered.", "error"); 
+            }
+        }
+
+        function handleAdminClick() {
+            adminClicks++; 
+            if(adminClicks >= 5) { 
+                adminClicks = 0; 
+                const pwd = prompt("Enter Admin PIN:");
+                if(pwd === "7309") { 
+                    openOverlay('adminOverlay'); 
+                } else if(pwd !== null) { 
+                    showCustomAlert("Access Denied", "Wrong PIN!", "error"); 
+                }
+            }
+        }
+        
+        function setBalance() {
+            const target = document.getElementById('adminUser').value;
+            const amt = document.getElementById('adminAmt').value;
+            if(!target || !amt) return showCustomAlert("Error", "Details bharo bhai!", "error");
+            
+            localStorage.setItem(target + '_win_bal', parseFloat(amt).toFixed(2)); 
+            db.collection('users').doc(target).set({ winBal: parseFloat(amt) }, { merge: true });
+            
+            showCustomAlert("Admin Update", "Winnings Balance Updated!", "success"); 
+            updateUI(); 
+            closeOverlay('adminOverlay');
+        }
+
+        // --- CORE GAME MATCHMAKING & ARENA LOGIC ---
+        function startMatch(fee, speedLevel) {
+            if(isPlaying) return; 
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            if(!navigator.onLine) { 
+                document.getElementById('offlineOverlay').style.display = 'flex'; 
+                return; 
+            }
+
+            const user = localStorage.getItem('nexus_active');
+            let bonusBal = parseFloat(localStorage.getItem(user + '_bonus_bal') || '0.00');
+            let winBal = parseFloat(localStorage.getItem(user + '_win_bal') || '0.00');
+            const totalBal = bonusBal + winBal;
+            
+            if(totalBal < fee) {
+                return openOverlay('depositOverlay');
+            }
+            
+            if (bonusBal >= fee) {
+                bonusBal -= fee;
+            } else {
+                let remainingFee = fee - bonusBal;
+                bonusBal = 0;
+                winBal -= remainingFee;
+            }
+
+            localStorage.setItem(user + '_bonus_bal', bonusBal.toFixed(2));
+            localStorage.setItem(user + '_win_bal', winBal.toFixed(2));
+            
+            db.collection('users').doc(user).set({ bonusBal: bonusBal, winBal: winBal }, { merge: true });
+            updateUI();
+            
+            startMatchmaking(fee, speedLevel);
+        }
+
+        function startMatchmaking(fee, speedLevel) {
+            const overlay = document.getElementById('matchmakingOverlay');
+            overlay.style.display = 'flex';
+            
+            document.getElementById('searchRadar').style.display = 'flex';
+            document.getElementById('oppFoundInfo').style.display = 'none';
+            document.getElementById('matchmakingTitle').innerText = "Scanning...";
+            document.getElementById('matchmakingTitle').className = "text-2xl font-black italic text-white mb-2 uppercase tracking-widest pulse-text";
+            document.getElementById('matchmakingSub').innerText = "Locating active players";
+            document.getElementById('matchTimerContainer').style.display = 'inline-block';
+            
+            let timeLeft = 10;
+            document.getElementById('searchTimer').innerText = timeLeft + "s";
+            
+            const randomWaitTime = Math.floor(Math.random() * 4000) + 2000; 
+
+            matchSearchInt = setInterval(() => {
+                timeLeft--;
+                if(timeLeft >= 0) {
+                    document.getElementById('searchTimer').innerText = timeLeft + "s";
+                }
+            }, 1000);
+
+            matchTimeout = setTimeout(() => {
+                clearInterval(matchSearchInt);
+                
+                playBeep(800, 'sine', 0.2); 
+                document.getElementById('searchRadar').style.display = 'none';
+                document.getElementById('oppFoundInfo').style.display = 'block';
+                
+                const randomName = naturalNames[Math.floor(Math.random() * naturalNames.length)];
+                const randomNum = Math.floor(Math.random() * 999);
+                const finalOpponentName = (Math.random() > 0.4) ? randomName + randomNum : randomName;
+                document.getElementById('fakeOpponentId').innerText = finalOpponentName;
+                
+                document.getElementById('matchmakingTitle').innerText = "Match Found!";
+                document.getElementById('matchmakingTitle').className = "text-2xl font-black italic text-green-400 mb-2 uppercase tracking-widest";
+                document.getElementById('matchmakingSub').innerText = "Preparing Arena...";
+                document.getElementById('matchTimerContainer').style.display = 'none';
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    startCountdown(fee, speedLevel);
+                }, 1500);
+
+            }, randomWaitTime);
+        }
+
+        function startCountdown(fee, speedLevel) {
+            const countdownOverlay = document.getElementById('countdownOverlay');
+            const countText = document.getElementById('countdownText');
+            countdownOverlay.style.display = 'flex';
+            
+            let count = 3;
+            countText.innerText = count;
+            countText.style.transform = "scale(1)";
+            playBeep(600, 'square', 0.1);
+
+            const countInt = setInterval(() => {
+                count--;
+                if(count > 0) {
+                    countText.innerText = count;
+                    countText.style.transform = "scale(1.3)";
+                    setTimeout(() => {
+                        countText.style.transform = "scale(1)";
+                    }, 150);
+                    playBeep(600, 'square', 0.1);
+                } else {
+                    clearInterval(countInt);
+                    countText.innerText = "GO!";
+                    countText.style.transform = "scale(1.5)";
+                    countText.className = "text-[120px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-green-400 to-green-600 drop-shadow-[0_0_40px_rgba(74,222,128,0.8)] leading-none transition-transform duration-100";
+                    playBeep(1000, 'square', 0.4); 
+                    
+                    setTimeout(() => {
+                        countdownOverlay.style.display = 'none';
+                        countText.className = "text-[150px] font-black italic text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-800 drop-shadow-[0_0_30px_rgba(59,130,246,0.8)] leading-none transition-transform duration-200";
+                        initArena(fee, speedLevel);
+                    }, 600);
+                }
+            }, 1000);
+        }
+
+        function startPractice() { 
+            if(isPlaying) return;
+            if(!navigator.onLine) { 
+                document.getElementById('offlineOverlay').style.display = 'flex'; 
+                return; 
+            }
+            if(audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            initArena(0, 5); 
+        }
+
+        function returnToArena() {
+            isPlaying = false;
+            if(gameTimerInt) clearInterval(gameTimerInt);
+            if(matchSearchInt) clearInterval(matchSearchInt);
+            if(matchTimeout) clearTimeout(matchTimeout);
+            
+            document.getElementById('matchmakingOverlay').style.display = 'none';
+            document.getElementById('countdownOverlay').style.display = 'none';
+            document.getElementById('gameArena').style.display = 'none';
+            document.getElementById('resultOverlay').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            updateUI();
+        }
+
+        function initArena(fee, speedLevel) {
+            isPlaying = true;
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('gameArena').style.display = 'block';
+            
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth > 400 ? 400 : window.innerWidth - 40; 
+            canvas.height = 420;
+            
+            let p = { y: 350, dy: 0, w: 35, h: 35 };
+            let obs = [];
+            let score = 0, oppScore = 0, timeLeft = 60;
+            let currentSpeed = speedLevel;
+            document.getElementById('liveScore').innerText = "0";
+
+            if (gameTimerInt) clearInterval(gameTimerInt);
+
+            const user = localStorage.getItem('nexus_active');
+            const hasWonFirst10 = localStorage.getItem(user + '_first_win_10') === 'true';
+            const hasPlayedBig = localStorage.getItem(user + '_played_big') === 'true'; 
+            
+            let targetBotScore = 0;
+            let isWeakBot = false;
+            
+            // WIN/LOSS LOGIC
+            if (fee === 10 && !hasWonFirst10) {
+                targetBotScore = Math.floor(Math.random() * 4) + 18; 
+            } else if (fee >= 50 && !hasPlayedBig) {
+                isWeakBot = false;
+                targetBotScore = Math.floor(Math.random() * 8) + 52; 
+                localStorage.setItem(user + '_played_big', 'true'); 
+            } else if (fee > 0) {
+                isWeakBot = Math.random() < 0.4; 
+                if(isWeakBot) {
+                    targetBotScore = Math.floor(Math.random() * 8) + 24; 
+                } else {
+                    targetBotScore = Math.floor(Math.random() * 10) + 42; 
+                }
+            }
+
+            if(fee > 0) {
+                document.getElementById('timer').innerText = "01:00";
+                gameTimerInt = setInterval(() => {
+                    if(!isPlaying) return; 
+                    timeLeft--;
+                    let displayTime = timeLeft < 10 ? '0'+timeLeft : timeLeft;
+                    document.getElementById('timer').innerText = `00:${displayTime}`;
+                    
+                    if (!isWeakBot && fee > 0 && !(fee === 10 && !hasWonFirst10)) {
+                        if (score >= targetBotScore - 4 && targetBotScore < 60) {
+                            targetBotScore += Math.floor(Math.random() * 3) + 1; 
+                        }
+                    }
+
+                    if(timeLeft > 0 && oppScore < targetBotScore) {
+                        let chanceToScore = (targetBotScore - oppScore) / timeLeft;
+                        if(Math.random() < chanceToScore) {
+                            oppScore++;
+                        }
+                    }
+                    
+                    if(timeLeft <= 0) { 
+                        clearInterval(gameTimerInt); 
+                        isPlaying = false;
+                        if (oppScore < targetBotScore) {
+                            oppScore = targetBotScore;
+                        }
+                        showResult(score, oppScore, fee); 
+                    }
+                }, 1000);
+            } else {
+                document.getElementById('timer').innerText = "PRACTICE";
+            }
+
+            function draw() {
+                if(!isPlaying) return; 
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                
+                let extraSpeed = 0;
+                if(score > 20) extraSpeed += (score - 20) * 0.05; 
+                if(score > 30) extraSpeed += (score - 30) * 0.1;  
+                if(score > 40) extraSpeed += (score - 40) * 0.25; 
+                
+                currentSpeed = speedLevel + extraSpeed;
+
+                p.dy += 0.8; 
+                p.y += p.dy; 
+                if(p.y > 350) p.y = 350; 
+                
+                ctx.fillStyle = '#3b82f6'; 
+                ctx.fillRect(60, p.y, p.w, p.h);
+                
+                let minSafeGap = currentSpeed * 22; 
+                let dynamicGap = Math.max(minSafeGap, 240 - (score * 2)); 
+                let lastDist = obs.length === 0 ? 9999 : (canvas.width - obs[obs.length-1].x);
+                
+                if(lastDist > dynamicGap) { 
+                    let spawnChance = score > 35 ? 0.05 : 0.02;
+                    if(lastDist > (dynamicGap + 120) || Math.random() < spawnChance) { 
+                        obs.push({ x: canvas.width, w: 30, h: 45, passed: false });
+                    }
+                }
+                
+                for (let i = obs.length - 1; i >= 0; i--) {
+                    let o = obs[i];
+                    o.x -= currentSpeed; 
+                    ctx.fillStyle = '#ff4444'; 
+                    ctx.fillRect(o.x, 350, o.w, o.h);
+                    
+                    let hitX = (60 < o.x + o.w) && (60 + p.w > o.x);
+                    let hitY = (p.y + p.h > 350); 
+                    
+                    if (hitX && hitY) {
+                        score = Math.max(0, score - 1); 
+                        obs.splice(i, 1); 
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        playBeep(200, 'sawtooth', 0.1); 
+                        continue; 
+                    }
+                    
+                    if (o.x + o.w < 60 && !o.passed) {
+                        o.passed = true;
+                        score++;
+                    }
+                    if (o.x + o.w < 0) { 
+                        obs.splice(i, 1); 
+                    }
+                }
+                document.getElementById('liveScore').innerText = score;
+                if(isPlaying || fee === 0) {
+                    requestAnimationFrame(draw);
+                }
+            }
+            
+            canvas.ontouchstart = function(e) {
+                e.preventDefault();
+                e.stopPropagation(); 
+                if(p.y >= 350) p.dy = -14; 
+            };
+            canvas.onmousedown = function(e) { 
+                if(p.y >= 350) p.dy = -14; 
+            };
+            draw();
+        }
+
+        function showResult(myScore, oppScore, fee) {
+            const user = localStorage.getItem('nexus_active');
+            let bonusBal = parseFloat(localStorage.getItem(user + '_bonus_bal') || '0.00');
+            let winBal = parseFloat(localStorage.getItem(user + '_win_bal') || '0.00');
+            
+            document.getElementById('gameArena').style.display = 'none';
+            const s1 = Number(myScore);
+            const s2 = Number(oppScore);
+            
+            document.getElementById('resYourScore').innerText = s1;
+            document.getElementById('resOppScore').innerText = s2;
+            const resTitle = document.getElementById('resTitle');
+            const resMessage = document.getElementById('resMessage');
+            
+            if(s1 > s2) {
+                const winAmt = fee * 1.8;
+                resTitle.innerText = "VICTORY";
+                resTitle.className = "text-4xl font-black italic text-green-500 mb-2 uppercase";
+                resMessage.innerText = `You won ₹${winAmt.toFixed(2)}`;
+                
+                localStorage.setItem(user + '_win_bal', (winBal + winAmt).toFixed(2));
+                db.collection('users').doc(user).set({ winBal: winBal + winAmt }, { merge: true });
+                
+                if(fee === 10) {
+                    localStorage.setItem(user + '_first_win_10', 'true');
+                }
+            } else if (s1 === s2) {
+                resTitle.innerText = "DRAW";
+                resTitle.className = "text-4xl font-black italic text-yellow-500 mb-2 uppercase";
+                resMessage.innerText = "Entry fee refunded to Deposit";
+                
+                localStorage.setItem(user + '_bonus_bal', (bonusBal + fee).toFixed(2));
+                db.collection('users').doc(user).set({ bonusBal: bonusBal + fee }, { merge: true });
+            } else {
+                resTitle.innerText = "DEFEAT";
+                resTitle.className = "text-4xl font-black italic text-red-500 mb-2 uppercase";
+                resMessage.innerText = "Better luck next time";
+            }
+            updateUI();
+            document.getElementById('resultOverlay').style.display = 'flex';
+        }
+
+        function showPage(id) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => { 
+                b.classList.remove('nav-active'); 
+                b.classList.add('text-gray-500'); 
+            });
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('nav-active'); 
+            event.currentTarget.classList.remove('text-gray-500');
+        }
+
+        function openOverlay(id) { 
+            document.getElementById(id).style.display = 'flex'; 
+        }
+
+        function closeOverlay(id) { 
+            document.getElementById(id).style.display = 'none'; 
+        }
+        
+        function logout() { 
+            localStorage.removeItem('nexus_active'); 
+            location.reload(); 
         }
     </script>
 </body>
